@@ -33,13 +33,13 @@ public class MoviePosterAdapter extends ArrayAdapter<MoviePoster> {
         }
 
         ImageView posterImageView = (ImageView) convertView.findViewById(R.id.poster_image);
-        posterImageView.setImageResource(moviePoster.getMoviePosterImage());
+        posterImageView.setImageBitmap(moviePoster.getMoviePosterBitmap());
 
         TextView movieTitleView = (TextView) convertView.findViewById(R.id.movie_title);
         movieTitleView.setText(moviePoster.getMovieTitle());
 
         TextView movieRatingView = (TextView) convertView.findViewById(R.id.poster_text);
-        movieRatingView.setText(moviePoster.getRating() + "");
+        movieRatingView.setText(moviePoster.getVoteAverage() + "");
         return convertView;
     }
 

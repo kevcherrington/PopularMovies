@@ -1,27 +1,48 @@
 package com.kecher.android.popularmovies;
 
+import android.graphics.Bitmap;
+
 import java.util.Date;
 
 /**
  * Created by kevin on 8/8/15.
  */
 public class MoviePoster {
+    public static String DATE_FORMAT = "yyyy-MM-dd";
     String movieTitle;
     Date releaseDate;
-    int moviePosterImage; // drawable reference id
+    int moviePosterDrawableId; // drawable reference id
+    String posterPath;
+    Bitmap moviePosterBitmap;
     Double voteAverage;
     String plotSynopsis;
     int popularity; // 1 is low
-    int rating; // 1 is low
 
-    public MoviePoster(String movieTitle, Date releaseDate, int moviePosterImage, Double voteAverage, String plotSynopsis, int popularity, int rating) {
+    public MoviePoster(String movieTitle, Date releaseDate, int moviePosterDrawableId, Double voteAverage, String plotSynopsis, int popularity) {
         this.movieTitle = movieTitle;
         this.releaseDate = releaseDate;
-        this.moviePosterImage = moviePosterImage;
+        this.moviePosterDrawableId = moviePosterDrawableId;
         this.voteAverage = voteAverage;
         this.plotSynopsis = plotSynopsis;
         this.popularity = popularity;
-        this.rating = rating;
+    }
+
+    public MoviePoster(String movieTitle, Date releaseDate, Bitmap moviePosterBitmap, Double voteAverage, String plotSynopsis, int popularity) {
+        this.movieTitle = movieTitle;
+        this.releaseDate = releaseDate;
+        this.moviePosterBitmap = moviePosterBitmap;
+        this.voteAverage = voteAverage;
+        this.plotSynopsis = plotSynopsis;
+        this.popularity = popularity;
+    }
+
+    public MoviePoster(String movieTitle, Date releaseDate, String posterPath, Double voteAverage, String plotSynopsis, int popularity) {
+        this.movieTitle = movieTitle;
+        this.releaseDate = releaseDate;
+        this.posterPath = posterPath;
+        this.voteAverage = voteAverage;
+        this.plotSynopsis = plotSynopsis;
+        this.popularity = popularity;
     }
 
     public String getMovieTitle() {
@@ -40,12 +61,28 @@ public class MoviePoster {
         this.releaseDate = releaseDate;
     }
 
-    public int getMoviePosterImage() {
-        return moviePosterImage;
+    public int getMoviePosterDrawableId() {
+        return moviePosterDrawableId;
     }
 
-    public void setMoviePosterImage(int moviePosterImage) {
-        this.moviePosterImage = moviePosterImage;
+    public void setMoviePosterDrawableId(int moviePosterDrawableId) {
+        this.moviePosterDrawableId = moviePosterDrawableId;
+    }
+
+    public String getPosterPath() {
+        return posterPath;
+    }
+
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
+    }
+
+    public Bitmap getMoviePosterBitmap() {
+        return moviePosterBitmap;
+    }
+
+    public void setMoviePosterBitmap(Bitmap moviePosterBitmap) {
+        this.moviePosterBitmap = moviePosterBitmap;
     }
 
     public Double getVoteAverage() {
@@ -70,13 +107,5 @@ public class MoviePoster {
 
     public void setPopularity(int popularity) {
         this.popularity = popularity;
-    }
-
-    public int getRating() {
-        return rating;
-    }
-
-    public void setRating(int rating) {
-        this.rating = rating;
     }
 }
