@@ -2,12 +2,13 @@ package com.kecher.android.popularmovies;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.util.List;
 
@@ -33,13 +34,18 @@ public class MoviePosterAdapter extends ArrayAdapter<MoviePoster> {
         }
 
         ImageView posterImageView = (ImageView) convertView.findViewById(R.id.poster_image);
-        posterImageView.setImageBitmap(moviePoster.getMoviePosterBitmap());
+        if (moviePoster.getMoviePosterBitmap() != null) {
+            posterImageView.setImageBitmap(moviePoster.getMoviePosterBitmap());
+        } else {
+            Bitmap noImage = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.no_image);
+            posterImageView.setImageBitmap(noImage);
+        }
 
-        TextView movieTitleView = (TextView) convertView.findViewById(R.id.movie_title);
-        movieTitleView.setText(moviePoster.getMovieTitle());
+//        TextView movieTitleView = (TextView) convertView.findViewById(R.id.movie_title);
+//        movieTitleView.setText(moviePoster.getMovieTitle());
 
-        TextView movieRatingView = (TextView) convertView.findViewById(R.id.poster_text);
-        movieRatingView.setText(moviePoster.getVoteAverage() + "");
+//        TextView movieRatingView = (TextView) convertView.findViewById(R.id.poster_text);
+//        movieRatingView.setText(moviePoster.getVoteAverage() + "");
         return convertView;
     }
 

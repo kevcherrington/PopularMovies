@@ -1,12 +1,15 @@
 package com.kecher.android.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,9 +35,9 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -43,6 +47,12 @@ import java.util.Properties;
  */
 public class PosterFragment extends Fragment {
     private final String LOG_TAG = PosterFragment.class.getSimpleName();
+
+    public static final String EXTRA_MOVIE_POSTER = "extra_movie_poster";
+    public static final String EXTRA_MOVIE_TITLE = "extra_movie_title";
+    public static final String EXTRA_MOVIE_RELEASE_DATE = "extra_movie_release_date";
+    public static final String EXTRA_MOVIE_VOTE_AVERAGE = "extra_movie_vote_average";
+    public static final String EXTRA_MOVIE_DETAILS = "extra_movie_details";
 
     private MoviePosterAdapter posterAdapter;
 
@@ -90,22 +100,56 @@ public class PosterFragment extends Fragment {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            FetchConfigDataTask configTask = new FetchConfigDataTask();
-            configTask.execute(apiKey);
+            refreshConfig(true);
+            refreshPosters();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void refreshConfig(boolean forceRefresh) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        // get the last time the config data was refreshed.
+        Date lastConfigRefresh = new Date(prefs.getLong(getString(R.string.pref_last_config_refresh),
+                new Date().getTime()));
+        Calendar lastWeek = Calendar.getInstance();
+        lastWeek.set(Calendar.DAY_OF_MONTH, -7);
+
+        // if the config data is older that 1 week refresh the config data before refreshing
+        // the posters
+        if (lastConfigRefresh.before(lastWeek.getTime()) || forceRefresh) {
+            FetchConfigDataTask configTask = new FetchConfigDataTask();
+            configTask.execute(apiKey, "true"); // api Key and should it fetch the movie posters after
+        }
+    }
+
+    private void refreshPosters() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        FetchMoviePostersTask postersTask = new FetchMoviePostersTask();
+
+        String sortOrder = prefs.getString(getString(R.string.pref_sort_order_key),
+                getString(R.string.pref_sort_order_popular));
+        String imageUrl = prefs.getString(getString(R.string.config_image_url),
+                getString(R.string.config_default_image_url));
+        String posterSize = prefs.getString(getString(R.string.config_poster_size),
+                getString(R.string.config_default_poster_size));
+
+        postersTask.execute(apiKey, imageUrl, posterSize, sortOrder);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        refreshConfig(false);
+        refreshPosters();
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         posterAdapter = new MoviePosterAdapter(getActivity(), new ArrayList<MoviePoster>());
-        // TODO cache the config data and then execute the FetchMoviePostersTask directly.
-        FetchConfigDataTask configTask = new FetchConfigDataTask();
-        configTask.execute(apiKey);
 
         // Get a reference to the ListView, and attach this adapter to it.
         GridView gridView = (GridView) rootView.findViewById(R.id.posters_grid);
@@ -117,8 +161,20 @@ public class PosterFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Executed in an Activity, so 'this' is the Context
                 // The fileUrl is a string URL, such as "http://www.example.com/image.png"
+
+                MoviePoster poster = posterAdapter.getItem(position);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                poster.getMoviePosterBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+
+                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy");
+                String releaseDate = poster.getReleaseDate() != null ? sdf.format(poster.getReleaseDate()) : "Unavailable";
                 Intent movieDetailIntent = new Intent(getActivity(), MovieDetailActivity.class)
-                .putExtra(Intent.EXTRA_TEXT, posterAdapter.getItem(position).getMovieTitle());
+                        .putExtra(EXTRA_MOVIE_POSTER, byteArray)
+                        .putExtra(EXTRA_MOVIE_TITLE, poster.getMovieTitle())
+                        .putExtra(EXTRA_MOVIE_RELEASE_DATE, releaseDate)
+                        .putExtra(EXTRA_MOVIE_VOTE_AVERAGE, poster.getVoteAverage())
+                        .putExtra(EXTRA_MOVIE_DETAILS, poster.getPlotSynopsis());
                 startActivity(movieDetailIntent);
             }
         });
@@ -128,6 +184,12 @@ public class PosterFragment extends Fragment {
 
     public class FetchMoviePostersTask extends AsyncTask<String, Void, MoviePoster[]> {
         private final String LOG_TAG = FetchMoviePostersTask.class.getSimpleName();
+
+        // parameters in the order they were passed.
+        private String apiKey;
+        private String imageUrl;
+        private String posterSize;
+        private String sortOrder;
 
         private MoviePoster[] parseMoviePosterJson(String json) throws JSONException {
             final String RESULTS = "results";
@@ -145,27 +207,33 @@ public class PosterFragment extends Fragment {
 
             SimpleDateFormat sdf = new SimpleDateFormat(MoviePoster.DATE_FORMAT);
             for (int i = 0; i < results.length(); i++) {
+                JSONObject poster = results.getJSONObject(i);
+                Date releaseDate = null;
                 try {
-                    JSONObject poster = results.getJSONObject(i);
-                    posters[i] = new MoviePoster(poster.getString(TITLE), sdf.parse(poster.getString(RELEASE_DATE)),
-                            poster.getString(POSTER_PATH), poster.getDouble(VOTE_AVERAGE), poster.getString(OVERVIEW),
-                            poster.getInt(POPULARITY));
+                    if (poster.getString(RELEASE_DATE) != null && !poster.getString(RELEASE_DATE).equals("null")) {
+                        releaseDate = sdf.parse(poster.getString(RELEASE_DATE));
+                    }
                 } catch (ParseException e) {
                     Log.e(LOG_TAG, "Unable to parse date ", e);
                 }
+                posters[i] = new MoviePoster(poster.getString(TITLE), releaseDate,
+                        poster.getString(POSTER_PATH), poster.getDouble(VOTE_AVERAGE), poster.getString(OVERVIEW),
+                        poster.getInt(POPULARITY));
             }
 
             return posters;
         }
 
-        private MoviePoster[] getMoviePosterImages(MoviePoster[] moviePosters, String posterSize, String configUrl, String apiKey) {
+        private MoviePoster[] getMoviePosterImages(MoviePoster[] moviePosters) {
             for (MoviePoster poster : moviePosters) {
-                poster.setMoviePosterBitmap(downloadBitmap(poster.getPosterPath(), posterSize, configUrl, apiKey));
+                if (poster != null && poster.getPosterPath() != null) {
+                    poster.setMoviePosterBitmap(downloadBitmap(poster.getPosterPath()));
+                }
             }
             return moviePosters;
         }
 
-        private Bitmap downloadBitmap(String posterPath, String posterSize, String configUrl, String api_key) {
+        private Bitmap downloadBitmap(String posterPath) {
             HttpURLConnection urlConnection = null;
 
             Bitmap poster = null;
@@ -174,10 +242,10 @@ public class PosterFragment extends Fragment {
                 final String API_KEY_PARAM = "api_key";
 
 
-                Uri builtUri = Uri.parse(configUrl).buildUpon()
+                Uri builtUri = Uri.parse(imageUrl).buildUpon()
                         .appendPath(posterSize)
                         .appendPath(posterPath.replaceAll("/", ""))
-                        .appendQueryParameter(API_KEY_PARAM, api_key).build();
+                        .appendQueryParameter(API_KEY_PARAM, apiKey).build();
 
                 URL url = new URL(builtUri.toString());
 
@@ -201,21 +269,27 @@ public class PosterFragment extends Fragment {
 
         /**
          * Retrieves the movie poster discover information
-         * @param params First param is the discovery url, Second param is the API_KEY, third param is the configuration url, fourth posterSize
+         * @param params First param is the discovery url, Second param is the API_KEY,
+         *               third param is the configuration url, fourth posterSize, fifth sortOrder
          * @return an array of MoviePoster obj
          */
         @Override
         protected MoviePoster[] doInBackground(String... params) {
 
-            if (params.length == 0) {
+            if (params.length > 4) {
                 return null;
             }
 
-            String postersJsonStr = downloadJsonString(params);
+            apiKey = params[0];
+            imageUrl = params[1];
+            posterSize = params[2];
+            sortOrder = params[3];
+
+            String postersJsonStr = downloadDiscoverJsonString();
             if (postersJsonStr == null) return null;
 
             try {
-                return getMoviePosterImages(parseMoviePosterJson(postersJsonStr), params[3], params[2], params[1]);
+                return getMoviePosterImages(parseMoviePosterJson(postersJsonStr));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -233,7 +307,7 @@ public class PosterFragment extends Fragment {
             }
         }
 
-        private String downloadJsonString(String[] params) {
+        private String downloadDiscoverJsonString() {
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
@@ -241,9 +315,11 @@ public class PosterFragment extends Fragment {
 
             try {
                 final String API_KEY_PARAM = "api_key";
+                final String SORT_BY_PARAM = "sort_by";
 
-                Uri builtUri = Uri.parse(params[0]).buildUpon()
-                        .appendQueryParameter(API_KEY_PARAM, params[1]).build();
+                Uri builtUri = Uri.parse(DISCOVER_URL).buildUpon()
+                        .appendQueryParameter(SORT_BY_PARAM, sortOrder)
+                        .appendQueryParameter(API_KEY_PARAM, apiKey).build();
 
                 URL url = new URL(builtUri.toString());
 
@@ -252,7 +328,7 @@ public class PosterFragment extends Fragment {
                 urlConnection.connect();
 
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder builder = new StringBuilder();
                 if (inputStream == null) {
                     return null;
                 }
@@ -260,13 +336,13 @@ public class PosterFragment extends Fragment {
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
+                    builder.append(line).append("\n");
                 }
 
-                if (buffer.length() == 0) {
+                if (builder.length() == 0) {
                     return null;
                 }
-                jsonStr = buffer.toString();
+                jsonStr = builder.toString();
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
@@ -296,6 +372,7 @@ public class PosterFragment extends Fragment {
         final String TMDB_BACKDROP_SIZES = "backdrop_sizes";
         final String TMDB_POSTER_SIZES = "poster_sizes";
         final String TMDB_CHANGE_KEYS = "change_keys";
+        private boolean fetchPosterImages;
 
         private Map<String, String[]> getConfigurationJson(String configurationJsonStr) throws JSONException {
             // the names of the JSON objects to be extracted.
@@ -340,6 +417,8 @@ public class PosterFragment extends Fragment {
                 return null;
             }
 
+            fetchPosterImages = "true".equals(params[1]);
+
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
@@ -359,7 +438,7 @@ public class PosterFragment extends Fragment {
                 urlConnection.connect();
 
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder builder = new StringBuilder();
                 if (inputStream == null) {
                     return null;
                 }
@@ -367,13 +446,13 @@ public class PosterFragment extends Fragment {
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
+                    builder.append(line).append("\n");
                 }
 
-                if (buffer.length() == 0) {
+                if (builder.length() == 0) {
                     return null;
                 }
-                configurationJsonStr = buffer.toString();
+                configurationJsonStr = builder.toString();
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
                 return null;
@@ -403,18 +482,23 @@ public class PosterFragment extends Fragment {
         protected void onPostExecute(Map<String, String[]> result) {
             if (result != null) {
                 configData = result;
-                Iterator<Map.Entry<String, String[]>> it = result.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, String[]> pair = it.next();
-                    Log.d(LOG_TAG, pair.getKey());
-                    for (String item : Arrays.asList(pair.getValue())) {
-                        Log.d(LOG_TAG, " -" + item);
-                    }
-                }
             }
-            FetchMoviePostersTask posterTask= new FetchMoviePostersTask();
-            posterTask.execute(DISCOVER_URL, apiKey, configData.get(TMDB_SECURE_BASE_URL)[0],
-                    configData.get(TMDB_POSTER_SIZES)[3]); // 0th index contains the smallest poster size.
+
+            SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString(getString(R.string.config_image_url), configData.get(TMDB_SECURE_BASE_URL)[0]);
+            editor.putString(getString(R.string.config_poster_size), configData.get(TMDB_POSTER_SIZES)[3]);
+            editor.putLong(getString(R.string.pref_last_config_refresh), new Date().getTime());
+            editor.commit();
+
+            String sortOrder = prefs.getString(getString(R.string.pref_sort_order_key),
+                    getString(R.string.pref_sort_order_popular));
+
+            if (fetchPosterImages) {
+                FetchMoviePostersTask posterTask = new FetchMoviePostersTask();
+                posterTask.execute(apiKey, configData.get(TMDB_SECURE_BASE_URL)[0],
+                        configData.get(TMDB_POSTER_SIZES)[3], sortOrder); // 0th index contains the smallest poster size.
+            }
         }
     }
 }

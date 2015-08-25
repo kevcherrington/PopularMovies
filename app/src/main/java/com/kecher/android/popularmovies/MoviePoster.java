@@ -18,30 +18,18 @@ public class MoviePoster {
     String plotSynopsis;
     int popularity; // 1 is low
 
-    public MoviePoster(String movieTitle, Date releaseDate, int moviePosterDrawableId, Double voteAverage, String plotSynopsis, int popularity) {
-        this.movieTitle = movieTitle;
-        this.releaseDate = releaseDate;
-        this.moviePosterDrawableId = moviePosterDrawableId;
-        this.voteAverage = voteAverage;
-        this.plotSynopsis = plotSynopsis;
-        this.popularity = popularity;
-    }
-
-    public MoviePoster(String movieTitle, Date releaseDate, Bitmap moviePosterBitmap, Double voteAverage, String plotSynopsis, int popularity) {
-        this.movieTitle = movieTitle;
-        this.releaseDate = releaseDate;
-        this.moviePosterBitmap = moviePosterBitmap;
-        this.voteAverage = voteAverage;
-        this.plotSynopsis = plotSynopsis;
-        this.popularity = popularity;
-    }
-
     public MoviePoster(String movieTitle, Date releaseDate, String posterPath, Double voteAverage, String plotSynopsis, int popularity) {
-        this.movieTitle = movieTitle;
+        if (!movieTitle.equals("null")) {
+            this.movieTitle = movieTitle;
+        }
         this.releaseDate = releaseDate;
-        this.posterPath = posterPath;
+        if (!posterPath.equals("null")) {
+            this.posterPath = posterPath;
+        }
         this.voteAverage = voteAverage;
-        this.plotSynopsis = plotSynopsis;
+        if (!plotSynopsis.equals("null")) {
+            this.plotSynopsis = plotSynopsis;
+        }
         this.popularity = popularity;
     }
 
@@ -50,7 +38,9 @@ public class MoviePoster {
     }
 
     public void setMovieTitle(String movieTitle) {
-        this.movieTitle = movieTitle;
+        if (!movieTitle.equals("null")) {
+            this.movieTitle = movieTitle;
+        }
     }
 
     public Date getReleaseDate() {
@@ -74,7 +64,9 @@ public class MoviePoster {
     }
 
     public void setPosterPath(String posterPath) {
-        this.posterPath = posterPath;
+        if (!posterPath.equals("null")) {
+            this.posterPath = posterPath;
+        }
     }
 
     public Bitmap getMoviePosterBitmap() {
@@ -98,7 +90,9 @@ public class MoviePoster {
     }
 
     public void setPlotSynopsis(String plotSynopsis) {
-        this.plotSynopsis = plotSynopsis;
+        if (!plotSynopsis.equals("null")) {
+            this.plotSynopsis = plotSynopsis;
+        }
     }
 
     public int getPopularity() {
