@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -27,10 +29,14 @@ public class MovieDetailFragment extends Fragment {
         Intent intent = getActivity().getIntent();
         if (intent != null) {
             if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_POSTER)) {
-                byte[] byteArray = intent.getByteArrayExtra(PosterFragment.EXTRA_MOVIE_POSTER);
-                Bitmap moviePoster = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-                ((ImageView) rootView.findViewById(R.id.movie_detail_poster_image))
-                        .setImageBitmap(moviePoster);
+                ImageView posterImageView = (ImageView) rootView.findViewById(R.id.movie_detail_poster_image);
+                String poster = intent.getStringExtra(PosterFragment.EXTRA_MOVIE_POSTER);
+                if (poster != null) {
+                    Picasso.with(getActivity()).load(poster).into(posterImageView);
+                } else {
+                    Bitmap noImage = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.no_image);
+                    posterImageView.setImageBitmap(noImage);
+                }
             }
             if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_TITLE)) {
                 String movieTitle = intent.getStringExtra(PosterFragment.EXTRA_MOVIE_TITLE);

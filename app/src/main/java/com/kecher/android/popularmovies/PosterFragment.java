@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,7 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -163,14 +160,10 @@ public class PosterFragment extends Fragment {
                 // The fileUrl is a string URL, such as "http://www.example.com/image.png"
 
                 MoviePoster poster = posterAdapter.getItem(position);
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                poster.getMoviePosterBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] byteArray = stream.toByteArray();
-
                 SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy");
                 String releaseDate = poster.getReleaseDate() != null ? sdf.format(poster.getReleaseDate()) : "Unavailable";
                 Intent movieDetailIntent = new Intent(getActivity(), MovieDetailActivity.class)
-                        .putExtra(EXTRA_MOVIE_POSTER, byteArray)
+                        .putExtra(EXTRA_MOVIE_POSTER, poster.getPosterUrl())
                         .putExtra(EXTRA_MOVIE_TITLE, poster.getMovieTitle())
                         .putExtra(EXTRA_MOVIE_RELEASE_DATE, releaseDate)
                         .putExtra(EXTRA_MOVIE_VOTE_AVERAGE, poster.getVoteAverage())
@@ -199,6 +192,7 @@ public class PosterFragment extends Fragment {
             final String POPULARITY = "popularity";
             final String TITLE = "title";
             final String VOTE_AVERAGE = "vote_average";
+            final String API_KEY_PARAM = "api_key";
 
             JSONObject posterJson = new JSONObject(json);
             JSONArray results = posterJson.getJSONArray(RESULTS);
@@ -216,55 +210,18 @@ public class PosterFragment extends Fragment {
                 } catch (ParseException e) {
                     Log.e(LOG_TAG, "Unable to parse date ", e);
                 }
+
+                Uri builtUri = Uri.parse(imageUrl).buildUpon()
+                        .appendPath(posterSize)
+                        .appendPath(poster.getString(POSTER_PATH).replaceAll("/", ""))
+                        .appendQueryParameter(API_KEY_PARAM, apiKey).build();
+
                 posters[i] = new MoviePoster(poster.getString(TITLE), releaseDate,
-                        poster.getString(POSTER_PATH), poster.getDouble(VOTE_AVERAGE), poster.getString(OVERVIEW),
+                        builtUri.toString(), poster.getDouble(VOTE_AVERAGE), poster.getString(OVERVIEW),
                         poster.getInt(POPULARITY));
             }
 
             return posters;
-        }
-
-        private MoviePoster[] getMoviePosterImages(MoviePoster[] moviePosters) {
-            for (MoviePoster poster : moviePosters) {
-                if (poster != null && poster.getPosterPath() != null) {
-                    poster.setMoviePosterBitmap(downloadBitmap(poster.getPosterPath()));
-                }
-            }
-            return moviePosters;
-        }
-
-        private Bitmap downloadBitmap(String posterPath) {
-            HttpURLConnection urlConnection = null;
-
-            Bitmap poster = null;
-
-            try {
-                final String API_KEY_PARAM = "api_key";
-
-
-                Uri builtUri = Uri.parse(imageUrl).buildUpon()
-                        .appendPath(posterSize)
-                        .appendPath(posterPath.replaceAll("/", ""))
-                        .appendQueryParameter(API_KEY_PARAM, apiKey).build();
-
-                URL url = new URL(builtUri.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-
-                poster = BitmapFactory.decodeStream(inputStream);
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-            }
-            return poster;
         }
 
         /**
@@ -289,7 +246,7 @@ public class PosterFragment extends Fragment {
             if (postersJsonStr == null) return null;
 
             try {
-                return getMoviePosterImages(parseMoviePosterJson(postersJsonStr));
+                return parseMoviePosterJson(postersJsonStr);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

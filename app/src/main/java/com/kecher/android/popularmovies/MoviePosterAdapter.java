@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 /**
@@ -22,6 +24,7 @@ public class MoviePosterAdapter extends ArrayAdapter<MoviePoster> {
 
     public MoviePosterAdapter(Activity context, List<MoviePoster> moviePosters) {
         super(context, 0, moviePosters);
+        mContext = context;
     }
 
     // create a new ImageView for each item referenced by the Adapter
@@ -34,18 +37,14 @@ public class MoviePosterAdapter extends ArrayAdapter<MoviePoster> {
         }
 
         ImageView posterImageView = (ImageView) convertView.findViewById(R.id.poster_image);
-        if (moviePoster.getMoviePosterBitmap() != null) {
-            posterImageView.setImageBitmap(moviePoster.getMoviePosterBitmap());
+
+        if (moviePoster.getPosterUrl() != null) {
+            Picasso.with(mContext).load(moviePoster.getPosterUrl()).into(posterImageView);
         } else {
             Bitmap noImage = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.no_image);
             posterImageView.setImageBitmap(noImage);
         }
 
-//        TextView movieTitleView = (TextView) convertView.findViewById(R.id.movie_title);
-//        movieTitleView.setText(moviePoster.getMovieTitle());
-
-//        TextView movieRatingView = (TextView) convertView.findViewById(R.id.poster_text);
-//        movieRatingView.setText(moviePoster.getVoteAverage() + "");
         return convertView;
     }
 

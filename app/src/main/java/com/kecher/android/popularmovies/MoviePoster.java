@@ -1,7 +1,5 @@
 package com.kecher.android.popularmovies;
 
-import android.graphics.Bitmap;
-
 import java.util.Date;
 
 /**
@@ -12,19 +10,18 @@ public class MoviePoster {
     String movieTitle;
     Date releaseDate;
     int moviePosterDrawableId; // drawable reference id
-    String posterPath;
-    Bitmap moviePosterBitmap;
+    String posterUrl;
     Double voteAverage;
     String plotSynopsis;
     int popularity; // 1 is low
 
-    public MoviePoster(String movieTitle, Date releaseDate, String posterPath, Double voteAverage, String plotSynopsis, int popularity) {
+    public MoviePoster(String movieTitle, Date releaseDate, String posterUrl, Double voteAverage, String plotSynopsis, int popularity) {
         if (!movieTitle.equals("null")) {
             this.movieTitle = movieTitle;
         }
         this.releaseDate = releaseDate;
-        if (!posterPath.equals("null")) {
-            this.posterPath = posterPath;
+        if (!posterUrl.equals("null")) {
+            this.posterUrl = posterUrl;
         }
         this.voteAverage = voteAverage;
         if (!plotSynopsis.equals("null")) {
@@ -59,22 +56,14 @@ public class MoviePoster {
         this.moviePosterDrawableId = moviePosterDrawableId;
     }
 
-    public String getPosterPath() {
-        return posterPath;
+    public String getPosterUrl() {
+        return posterUrl;
     }
 
-    public void setPosterPath(String posterPath) {
-        if (!posterPath.equals("null")) {
-            this.posterPath = posterPath;
+    public void setPosterUrl(String posterUrl) {
+        if (!posterUrl.equals("null")) {
+            this.posterUrl = posterUrl;
         }
-    }
-
-    public Bitmap getMoviePosterBitmap() {
-        return moviePosterBitmap;
-    }
-
-    public void setMoviePosterBitmap(Bitmap moviePosterBitmap) {
-        this.moviePosterBitmap = moviePosterBitmap;
     }
 
     public Double getVoteAverage() {
