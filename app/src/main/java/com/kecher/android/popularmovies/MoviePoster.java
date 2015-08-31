@@ -1,5 +1,11 @@
 package com.kecher.android.popularmovies;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Log;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -19,11 +25,12 @@ import java.util.Date;
  * Kevin Cherrington
  *
  */
-public class MoviePoster {
+public class MoviePoster implements Parcelable {
+    private static String LOG_TAG = MoviePoster.class.getSimpleName();
+
     public static String DATE_FORMAT = "yyyy-MM-dd";
     String movieTitle;
     Date releaseDate;
-    int moviePosterDrawableId; // drawable reference id
     String posterUrl;
     Double voteAverage;
     String plotSynopsis;
@@ -44,6 +51,48 @@ public class MoviePoster {
         this.popularity = popularity;
     }
 
+    public MoviePoster(Parcel in) {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+        movieTitle = in.readString();
+        try {
+            releaseDate = sdf.parse(in.readString());
+        } catch (ParseException e) {
+            Log.e(LOG_TAG, "unable to parse date: ", e);
+        }
+        posterUrl = in.readString();
+        voteAverage = in.readDouble();
+        plotSynopsis = in.readString();
+        popularity = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+        dest.writeString(movieTitle);
+        if (releaseDate != null) {
+            dest.writeString(sdf.format(releaseDate));
+        } else {
+            dest.writeString(null);
+        }
+        dest.writeString(posterUrl);
+        dest.writeDouble(voteAverage);
+        dest.writeString(plotSynopsis);
+        dest.writeInt(popularity);
+    }
+
+    public static final Parcelable.Creator<MoviePoster> CREATOR = new Parcelable.Creator<MoviePoster>() {
+
+        @Override
+        public MoviePoster createFromParcel(Parcel source) {
+            return new MoviePoster(source);
+        }
+
+        @Override
+        public MoviePoster[] newArray(int size) {
+            return new MoviePoster[size];
+        }
+    };
+
     public String getMovieTitle() {
         return movieTitle;
     }
@@ -60,14 +109,6 @@ public class MoviePoster {
 
     public void setReleaseDate(Date releaseDate) {
         this.releaseDate = releaseDate;
-    }
-
-    public int getMoviePosterDrawableId() {
-        return moviePosterDrawableId;
-    }
-
-    public void setMoviePosterDrawableId(int moviePosterDrawableId) {
-        this.moviePosterDrawableId = moviePosterDrawableId;
     }
 
     public String getPosterUrl() {
@@ -105,4 +146,10 @@ public class MoviePoster {
     public void setPopularity(int popularity) {
         this.popularity = popularity;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
 }

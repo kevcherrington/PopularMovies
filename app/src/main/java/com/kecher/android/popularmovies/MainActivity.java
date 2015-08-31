@@ -25,12 +25,33 @@ import android.view.MenuItem;
  */
 public class MainActivity extends ActionBarActivity {
 
+    private String sortOrder;
+    private final String POSTERFRAGMENT_TAG = "PFTAG";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        sortOrder = Utility.getSortOrder(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new PosterFragment(), POSTERFRAGMENT_TAG)
+                    .commit();
+        }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String storedSortOrder = Utility.getSortOrder(this);
+        if (storedSortOrder != null && !storedSortOrder.equals(sortOrder)) {
+            PosterFragment pf = (PosterFragment) getSupportFragmentManager().findFragmentByTag(POSTERFRAGMENT_TAG);
+            if (pf != null) {
+                pf.onSortOrderChanged();
+            }
+            sortOrder = storedSortOrder;
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

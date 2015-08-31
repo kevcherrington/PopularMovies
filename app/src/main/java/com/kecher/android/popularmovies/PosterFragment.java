@@ -1,9 +1,7 @@
 package com.kecher.android.popularmovies;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,7 +34,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * (C) Copyright 2015 Kevin Cherrington (kevcherrington@gmail.com).
@@ -66,12 +63,13 @@ public class PosterFragment extends Fragment {
 
     private MoviePosterAdapter posterAdapter;
 
-    private final String API_KEY_PROP_NAME = "api_key";
-    private String apiKey;
+    private final String MOVIE_POSTERS = "movie_posters";
 
-    // for the youtube preview use this url... https://www.youtube.com/watch?v={key}
-    // for the image configuration json http://api.themoviedb.org/3/configuration?api_key=XXX
-    // For the poster images use this url... http://image.tmdb.org/t/p/w1280/{img_Loc}.jpg?api_key=XXX (http://docs.themoviedb.apiary.io/#reference/configuration/configuration/get)
+    private String apiKey;
+    private String imageUrl;
+    private String posterSize;
+    private String discoverJson;
+    private MoviePoster[] moviePosters;
 
     public static String DISCOVER_URL = "https://api.themoviedb.org/3/discover/movie";
 
@@ -86,15 +84,24 @@ public class PosterFragment extends Fragment {
         setHasOptionsMenu(true);
 
         // load the TMDB api key from the popular_movies.properties resource file.
-        try {
-            InputStream rawResource = this.getResources().openRawResource(R.raw.popular_movies);
-            Properties properties = new Properties();
-            properties.load(rawResource);
-            apiKey = properties.getProperty(API_KEY_PROP_NAME);
-        } catch (Resources.NotFoundException e) {
-            Log.e(LOG_TAG, "Unable to find resource: ", e);
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Unable to open resource: ", e);
+        if (apiKey == null) {
+            apiKey = Utility.getApiKey(getActivity());
+        }
+
+        refreshConfig(false); // will not force a refresh.
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(Utility.API_KEY)) {
+                apiKey = savedInstanceState.getString(Utility.API_KEY);
+            }
+            if (savedInstanceState.containsKey(MOVIE_POSTERS)) {
+                moviePosters = (MoviePoster[]) savedInstanceState.getParcelableArray(MOVIE_POSTERS);
+                if (moviePosters == null) {
+                    refreshPosters();
+                }
+            }
+        } else {
+            refreshPosters();
         }
     }
 
@@ -111,8 +118,11 @@ public class PosterFragment extends Fragment {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
             refreshConfig(true);
+            Log.d(LOG_TAG, "force refresh from Menu calling refreshPosters");
             refreshPosters();
             return true;
+        } else if (id == R.id.action_settings) {
+            refreshPosters();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -130,36 +140,44 @@ public class PosterFragment extends Fragment {
         // the posters
         if (lastConfigRefresh.before(lastWeek.getTime()) || forceRefresh) {
             FetchConfigDataTask configTask = new FetchConfigDataTask();
-            configTask.execute(apiKey, "true"); // api Key and should it fetch the movie posters after
+            configTask.execute(apiKey, "true");
         }
     }
 
     private void refreshPosters() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        FetchMoviePostersTask postersTask = new FetchMoviePostersTask();
+        FetchDiscoverJsonTask discoverJsonTask = new FetchDiscoverJsonTask();
 
-        String sortOrder = prefs.getString(getString(R.string.pref_sort_order_key),
-                getString(R.string.pref_sort_order_popular));
-        String imageUrl = prefs.getString(getString(R.string.config_image_url),
-                getString(R.string.config_default_image_url));
-        String posterSize = prefs.getString(getString(R.string.config_poster_size),
-                getString(R.string.config_default_poster_size));
+        String sortOrder = Utility.getSortOrder(getActivity());
+        imageUrl = Utility.getImageUrl(getActivity());
+        posterSize = Utility.getPosterSize(getActivity());
 
-        postersTask.execute(apiKey, imageUrl, posterSize, sortOrder);
+        discoverJsonTask.execute(apiKey, sortOrder);
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        refreshConfig(false);
-        refreshPosters();
+    public void onSaveInstanceState(Bundle outState) {
+        if (apiKey != null) {
+            outState.putString(Utility.API_KEY, apiKey);
+        }
+        if (moviePosters != null) {
+            outState.putParcelableArray(MOVIE_POSTERS, moviePosters);
+        }
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         posterAdapter = new MoviePosterAdapter(getActivity(), new ArrayList<MoviePoster>());
+
+        if (moviePosters != null) {
+            posterAdapter.clear();
+            for (MoviePoster poster : moviePosters) {
+                posterAdapter.add(poster);
+            }
+        }
 
         // Get a reference to the ListView, and attach this adapter to it.
         GridView gridView = (GridView) rootView.findViewById(R.id.posters_grid);
@@ -188,16 +206,15 @@ public class PosterFragment extends Fragment {
         return rootView;
     }
 
-    public class FetchMoviePostersTask extends AsyncTask<String, Void, MoviePoster[]> {
-        private final String LOG_TAG = FetchMoviePostersTask.class.getSimpleName();
+    public void onSortOrderChanged() {
+        refreshPosters();
+    }
 
-        // parameters in the order they were passed.
-        private String apiKey;
-        private String imageUrl;
-        private String posterSize;
-        private String sortOrder;
+    public class ParseDiscoverJsonTask extends AsyncTask<String, Void, MoviePoster[]> {
+        private final String LOG_TAG = ParseDiscoverJsonTask.class.getSimpleName();
 
-        private MoviePoster[] parseMoviePosterJson(String json) throws JSONException {
+        @Override
+        protected MoviePoster[] doInBackground(String... params) {
             final String RESULTS = "results";
             final String OVERVIEW = "overview"; // plotSynopsis
             final String RELEASE_DATE = "release_date";
@@ -207,35 +224,66 @@ public class PosterFragment extends Fragment {
             final String VOTE_AVERAGE = "vote_average";
             final String API_KEY_PARAM = "api_key";
 
-            JSONObject posterJson = new JSONObject(json);
-            JSONArray results = posterJson.getJSONArray(RESULTS);
-
-            MoviePoster[] posters = new MoviePoster[results.length()];
-
-            SimpleDateFormat sdf = new SimpleDateFormat(MoviePoster.DATE_FORMAT);
-            for (int i = 0; i < results.length(); i++) {
-                JSONObject poster = results.getJSONObject(i);
-                Date releaseDate = null;
-                try {
-                    if (poster.getString(RELEASE_DATE) != null && !poster.getString(RELEASE_DATE).equals("null")) {
-                        releaseDate = sdf.parse(poster.getString(RELEASE_DATE));
-                    }
-                } catch (ParseException e) {
-                    Log.e(LOG_TAG, "Unable to parse date ", e);
-                }
-
-                Uri builtUri = Uri.parse(imageUrl).buildUpon()
-                        .appendPath(posterSize)
-                        .appendPath(poster.getString(POSTER_PATH).replaceAll("/", ""))
-                        .appendQueryParameter(API_KEY_PARAM, apiKey).build();
-
-                posters[i] = new MoviePoster(poster.getString(TITLE), releaseDate,
-                        builtUri.toString(), poster.getDouble(VOTE_AVERAGE), poster.getString(OVERVIEW),
-                        poster.getInt(POPULARITY));
+            if (params.length == 0) {
+                Log.w(LOG_TAG, "No JSON string passed into ParseDiscoverJsonTask");
+                return null;
             }
 
+            MoviePoster[] posters = null;
+
+            try {
+                JSONObject posterJson = new JSONObject(params[0]);
+                JSONArray results = posterJson.getJSONArray(RESULTS);
+
+                posters = new MoviePoster[results.length()];
+
+                SimpleDateFormat sdf = new SimpleDateFormat(MoviePoster.DATE_FORMAT);
+                for (int i = 0; i < results.length(); i++) {
+                    JSONObject poster = results.getJSONObject(i);
+                    Date releaseDate = null;
+                    try {
+                        if (poster.getString(RELEASE_DATE) != null && !poster.getString(RELEASE_DATE).equals("null")) {
+                            releaseDate = sdf.parse(poster.getString(RELEASE_DATE));
+                        }
+                    } catch (ParseException e) {
+                        Log.e(LOG_TAG, "Unable to parse date ", e);
+                    }
+
+                    Uri builtUri = Uri.parse(imageUrl).buildUpon()
+                            .appendPath(posterSize)
+                            .appendPath(poster.getString(POSTER_PATH).replaceAll("/", ""))
+                            .appendQueryParameter(API_KEY_PARAM, apiKey).build();
+
+                    posters[i] = new MoviePoster(poster.getString(TITLE), releaseDate,
+                            builtUri.toString(), poster.getDouble(VOTE_AVERAGE), poster.getString(OVERVIEW),
+                            poster.getInt(POPULARITY));
+                }
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, "Unable to parse Discover JSON", e);
+            }
             return posters;
         }
+
+        protected void onPostExecute(MoviePoster[] posters) {
+            if (posters != null) {
+                moviePosters = posters;
+
+                if (posterAdapter != null) { // update poster adapter. Will be null if view has not yet been drawn.
+                    posterAdapter.clear();
+                    for (MoviePoster poster : moviePosters) {
+                        posterAdapter.add(poster);
+                    }
+                }
+            }
+        }
+    }
+
+    public class FetchDiscoverJsonTask extends AsyncTask<String, Void, String> {
+        private final String LOG_TAG = FetchDiscoverJsonTask.class.getSimpleName();
+
+        // parameters in the order they were passed.
+        private String apiKey;
+        private String sortOrder;
 
         /**
          * Retrieves the movie poster discover information
@@ -244,36 +292,24 @@ public class PosterFragment extends Fragment {
          * @return an array of MoviePoster obj
          */
         @Override
-        protected MoviePoster[] doInBackground(String... params) {
+        protected String doInBackground(String... params) {
 
             if (params.length > 4) {
                 return null;
             }
 
             apiKey = params[0];
-            imageUrl = params[1];
-            posterSize = params[2];
-            sortOrder = params[3];
+            sortOrder = params[1];
 
-            String postersJsonStr = downloadDiscoverJsonString();
-            if (postersJsonStr == null) return null;
-
-            try {
-                return parseMoviePosterJson(postersJsonStr);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            return null;
+            return downloadDiscoverJsonString();
         }
 
         @Override
-        protected void onPostExecute(MoviePoster[] posters) {
-            if (posters != null) {
-                posterAdapter.clear();
-                for (MoviePoster poster : posters) {
-                    posterAdapter.add(poster);
-                }
+        protected void onPostExecute(String json) {
+            if (json != null) {
+                discoverJson = json;
+                ParseDiscoverJsonTask parseJsonTask = new ParseDiscoverJsonTask();
+                parseJsonTask.execute(discoverJson);
             }
         }
 
@@ -291,6 +327,7 @@ public class PosterFragment extends Fragment {
                         .appendQueryParameter(SORT_BY_PARAM, sortOrder)
                         .appendQueryParameter(API_KEY_PARAM, apiKey).build();
 
+                Log.d(LOG_TAG, "CONNECTION URL: " + builtUri.toString());
                 URL url = new URL(builtUri.toString());
 
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -332,7 +369,6 @@ public class PosterFragment extends Fragment {
             return jsonStr;
         }
     }
-
 
     public class FetchConfigDataTask extends AsyncTask<String, Void, Map<String, String[]>> { // AsyncTask<params, progress, result>
         private final String LOG_TAG = FetchConfigDataTask.class.getSimpleName();
@@ -454,7 +490,7 @@ public class PosterFragment extends Fragment {
                 configData = result;
             }
 
-            SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString(getString(R.string.config_image_url), configData.get(TMDB_SECURE_BASE_URL)[0]);
             editor.putString(getString(R.string.config_poster_size), configData.get(TMDB_POSTER_SIZES)[3]);
@@ -464,10 +500,12 @@ public class PosterFragment extends Fragment {
             String sortOrder = prefs.getString(getString(R.string.pref_sort_order_key),
                     getString(R.string.pref_sort_order_popular));
 
+            imageUrl = configData.get(TMDB_SECURE_BASE_URL)[0];
+            posterSize = configData.get(TMDB_POSTER_SIZES)[3];
+
             if (fetchPosterImages) {
-                FetchMoviePostersTask posterTask = new FetchMoviePostersTask();
-                posterTask.execute(apiKey, configData.get(TMDB_SECURE_BASE_URL)[0],
-                        configData.get(TMDB_POSTER_SIZES)[3], sortOrder); // 0th index contains the smallest poster size.
+                FetchDiscoverJsonTask posterTask = new FetchDiscoverJsonTask();
+                posterTask.execute(apiKey, sortOrder);
             }
         }
     }

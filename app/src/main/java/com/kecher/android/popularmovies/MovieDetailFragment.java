@@ -1,8 +1,6 @@
 package com.kecher.android.popularmovies;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -48,8 +46,7 @@ public class MovieDetailFragment extends Fragment {
                 if (poster != null) {
                     Picasso.with(getActivity()).load(poster).into(posterImageView);
                 } else {
-                    Bitmap noImage = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.no_image);
-                    posterImageView.setImageBitmap(noImage);
+                    Picasso.with(getActivity()).load(R.drawable.no_image).into(posterImageView);
                 }
             }
             if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_TITLE)) {
