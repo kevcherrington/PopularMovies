@@ -2,8 +2,6 @@ package com.kecher.android.popularmovies;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,12 +50,8 @@ public class MoviePosterAdapter extends ArrayAdapter<MoviePoster> {
 
         ImageView posterImageView = (ImageView) convertView.findViewById(R.id.poster_image);
 
-        if (moviePoster.getPosterUrl() != null) {
-            Picasso.with(mContext).load(moviePoster.getPosterUrl()).into(posterImageView);
-        } else {
-            Bitmap noImage = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.no_image);
-            posterImageView.setImageBitmap(noImage);
-        }
+        Picasso.with(mContext).load(moviePoster.getPosterUrl()).placeholder(R.drawable.no_image)
+                .error(R.drawable.no_image).into(posterImageView);
 
         return convertView;
     }
