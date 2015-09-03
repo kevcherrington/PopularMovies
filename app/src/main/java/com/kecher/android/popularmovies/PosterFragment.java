@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -131,7 +132,7 @@ public class PosterFragment extends Fragment {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         // get the last time the config data was refreshed.
-        Date lastConfigRefresh = new Date(prefs.getLong(getString(R.string.pref_last_config_refresh),
+        Date lastConfigRefresh = new Date(prefs.getLong(getString(R.string.config_last_config_refresh),
                 new Date().getTime()));
         Calendar lastWeek = Calendar.getInstance();
         lastWeek.set(Calendar.DAY_OF_MONTH, -7);
@@ -152,7 +153,11 @@ public class PosterFragment extends Fragment {
         imageUrl = Utility.getImageUrl(getActivity());
         posterSize = Utility.getPosterSize(getActivity());
 
-        discoverJsonTask.execute(apiKey, sortOrder);
+        if (sortOrder.equals(getString(R.string.pref_sort_favorites))) {
+            Toast.makeText(getActivity(), "No favorites stored", Toast.LENGTH_SHORT).show();
+        } else {
+            discoverJsonTask.execute(apiKey, sortOrder);
+        }
     }
 
     @Override
@@ -494,11 +499,11 @@ public class PosterFragment extends Fragment {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString(getString(R.string.config_image_url), configData.get(TMDB_SECURE_BASE_URL)[0]);
             editor.putString(getString(R.string.config_poster_size), configData.get(TMDB_POSTER_SIZES)[3]);
-            editor.putLong(getString(R.string.pref_last_config_refresh), new Date().getTime());
+            editor.putLong(getString(R.string.config_last_config_refresh), new Date().getTime());
             editor.commit();
 
-            String sortOrder = prefs.getString(getString(R.string.pref_sort_order_key),
-                    getString(R.string.pref_sort_order_popular));
+            String sortOrder = prefs.getString(getString(R.string.pref_sort_key),
+                    getString(R.string.pref_sort_popular));
 
             imageUrl = configData.get(TMDB_SECURE_BASE_URL)[0];
             posterSize = configData.get(TMDB_POSTER_SIZES)[3];

@@ -49,8 +49,8 @@ public class Utility {
     public static String getSortOrder(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        return prefs.getString(context.getString(R.string.pref_sort_order_key),
-                context.getString(R.string.pref_sort_order_popular));
+        return prefs.getString(context.getString(R.string.pref_sort_key),
+                context.getString(R.string.pref_sort_popular));
     }
 
     public static String getImageUrl(Context context) {

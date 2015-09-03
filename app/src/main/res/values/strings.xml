@@ -6,27 +6,37 @@
     <string name="title_activity_movie_detail">Movie Details</string>
 
     <!--shared preferences key for the sort order chosen in the settings-->
-    <string name="pref_sort_order_key">sort_order</string>
-    <string name="pref_sort_order_label">Sort Order</string>
-    <string name="pref_sort_order_popular">popularity.desc</string>
-    <string name="pref_sort_order_highest_rated">vote_average.desc</string>
+    <string name="pref_sort_key" translatable="false">sort_order</string>
+    <string name="pref_sort_label" translatable="false">Sort Order</string>
+    <string name="pref_sort_popular" translatable="false">popularity.desc</string>
+    <string name="pref_sort_highest_rated" translatable="false">vote_average.desc</string>
+    <string name="pref_sort_favorites" translatable="false">favorites</string>
+
+    <string name="no_favorites">No favorites stored</string>
+    <string name="pref_sort_popular_title">Most Popular</string>
+    <string name="pref_sort_highest_rated_title">Highest Rated</string>
+    <string name="pref_sort_favorites_title">My Favorites</string>
+
     <string-array name="pref_sort_order_values">
-        <item>popularity.desc</item>
-        <item>vote_average.desc</item>
+        <item>@string/pref_sort_popular</item>
+        <item>@string/pref_sort_highest_rated</item>
+        <item>@string/pref_sort_favorites</item>
     </string-array>
+
     <string-array name="pref_sort_order_options">
-        <item>Most Popular</item>
-        <item>Highest Rated</item>
+        <item>@string/pref_sort_popular_title</item>
+        <item>@string/pref_sort_highest_rated_title</item>
+        <item>@string/pref_sort_favorites_title</item>
     </string-array>
 
     <!--shared preferences key for when the configuration data for TheMovieDB.com data was last refreshed-->
-    <string name="pref_last_config_refresh">last_config_refresh</string>
+    <string name="config_last_config_refresh" translatable="false">last_config_refresh</string>
     <!--shared pref key for the url to download the images from-->
-    <string name="config_image_url">image_url</string>
-    <string name="config_default_image_url">https://image.tmdb.org/t/p/</string>
+    <string name="config_image_url" translatable="false">image_url</string>
+    <string name="config_default_image_url" translatable="false">https://image.tmdb.org/t/p/</string>
     <!--shared pref key for the movie poster size-->
-    <string name="config_poster_size">poster_size</string>
-    <string name="config_default_poster_size">w342</string>
+    <string name="config_poster_size" translatable="false">poster_size</string>
+    <string name="config_default_poster_size" translatable="false">w185</string>
 
     <string name="movie_detail_description_title">Details:</string>
     <string name="movie_detail_release_title">Released:</string>
