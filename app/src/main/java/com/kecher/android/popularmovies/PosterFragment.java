@@ -203,7 +203,7 @@ public class PosterFragment extends Fragment {
                         .putExtra(EXTRA_MOVIE_TITLE, poster.getMovieTitle())
                         .putExtra(EXTRA_MOVIE_RELEASE_DATE, releaseDate)
                         .putExtra(EXTRA_MOVIE_VOTE_AVERAGE, poster.getVoteAverage())
-                        .putExtra(EXTRA_MOVIE_DETAILS, poster.getPlotSynopsis());
+                        .putExtra(EXTRA_MOVIE_DETAILS, poster.getOverview());
                 startActivity(movieDetailIntent);
             }
         });
@@ -221,7 +221,7 @@ public class PosterFragment extends Fragment {
         @Override
         protected MoviePoster[] doInBackground(String... params) {
             final String RESULTS = "results";
-            final String OVERVIEW = "overview"; // plotSynopsis
+            final String OVERVIEW = "overview"; // overview
             final String RELEASE_DATE = "release_date";
             final String POSTER_PATH = "poster_path";
             final String POPULARITY = "popularity";

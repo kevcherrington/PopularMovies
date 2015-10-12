@@ -7,6 +7,7 @@ import android.util.Log;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * (C) Copyright 2015 Kevin Cherrington (kevcherrington@gmail.com).
@@ -29,14 +30,15 @@ public class MoviePoster implements Parcelable {
     private static String LOG_TAG = MoviePoster.class.getSimpleName();
 
     public static String DATE_FORMAT = "yyyy-MM-dd";
-    String movieTitle;
-    Date releaseDate;
-    String posterUrl;
-    Double voteAverage;
-    String plotSynopsis;
-    int popularity; // 1 is low
+    private String movieTitle;
+    private Date releaseDate;
+    private String posterUrl;
+    private List<String> trailerUrls;
+    private Double voteAverage;
+    private String overview;
+    private int popularity; // 1 is low
 
-    public MoviePoster(String movieTitle, Date releaseDate, String posterUrl, Double voteAverage, String plotSynopsis, int popularity) {
+    public MoviePoster(String movieTitle, Date releaseDate, String posterUrl, Double voteAverage, String overview, int popularity) {
         if (!movieTitle.equals("null")) {
             this.movieTitle = movieTitle;
         }
@@ -45,8 +47,8 @@ public class MoviePoster implements Parcelable {
             this.posterUrl = posterUrl;
         }
         this.voteAverage = voteAverage;
-        if (!plotSynopsis.equals("null")) {
-            this.plotSynopsis = plotSynopsis;
+        if (!overview.equals("null")) {
+            this.overview = overview;
         }
         this.popularity = popularity;
     }
@@ -60,8 +62,9 @@ public class MoviePoster implements Parcelable {
             Log.e(LOG_TAG, "unable to parse date: ", e);
         }
         posterUrl = in.readString();
+        in.readStringList(trailerUrls);
         voteAverage = in.readDouble();
-        plotSynopsis = in.readString();
+        overview = in.readString();
         popularity = in.readInt();
     }
 
@@ -75,8 +78,9 @@ public class MoviePoster implements Parcelable {
             dest.writeString(null);
         }
         dest.writeString(posterUrl);
+        dest.writeStringList(trailerUrls);
         dest.writeDouble(voteAverage);
-        dest.writeString(plotSynopsis);
+        dest.writeString(overview);
         dest.writeInt(popularity);
     }
 
@@ -121,6 +125,13 @@ public class MoviePoster implements Parcelable {
         }
     }
 
+    public List<String> getTrailerUrls() {
+        return trailerUrls;
+    }
+
+    public void setTrailerUrls(List<String> trailerUrls) {
+        this.trailerUrls = trailerUrls;
+    }
     public Double getVoteAverage() {
         return voteAverage;
     }
@@ -129,13 +140,13 @@ public class MoviePoster implements Parcelable {
         this.voteAverage = voteAverage;
     }
 
-    public String getPlotSynopsis() {
-        return plotSynopsis;
+    public String getOverview() {
+        return overview;
     }
 
-    public void setPlotSynopsis(String plotSynopsis) {
-        if (!plotSynopsis.equals("null")) {
-            this.plotSynopsis = plotSynopsis;
+    public void setOverview(String overview) {
+        if (!overview.equals("null")) {
+            this.overview = overview;
         }
     }
 
