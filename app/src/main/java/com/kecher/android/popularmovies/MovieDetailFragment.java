@@ -1,8 +1,10 @@
 package com.kecher.android.popularmovies;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+
+import java.security.InvalidParameterException;
 
 /**
  * (C) Copyright 2015 Kevin Cherrington (kevcherrington@gmail.com).
@@ -29,6 +33,7 @@ import com.squareup.picasso.Picasso;
  *
  */
 public class MovieDetailFragment extends Fragment {
+    private static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
 
     public MovieDetailFragment() {
     }
@@ -69,8 +74,27 @@ public class MovieDetailFragment extends Fragment {
                 ((TextView) rootView.findViewById(R.id.movie_detail_description))
                         .setText(description);
             }
+//            if (intent.hasExtra())
         }
         return rootView;
+    }
+
+    private void launchTrailer(String site, String key) {
+        if (site == null || key == null) {
+            throw new InvalidParameterException("Trailer site and trailer key cannot be null.");
+        }
+        if (site.toLowerCase().equals("youtube")) {
+            Uri videoUri = Uri.parse("http://www.youtube.com/watch?v=" + key);
+            Intent vidIntent = new Intent(Intent.ACTION_VIEW);
+            vidIntent.setData(videoUri);
+            if (vidIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                startActivity(vidIntent);
+            } else {
+                Log.d(LOG_TAG, "Couldn't call " + videoUri.toString() + ", no receiving apps installed!"); // not likely because this can be opened in the browser.
+            }
+        } else {
+            throw new UnsupportedOperationException("site not supported.");
+        }
     }
 
 }

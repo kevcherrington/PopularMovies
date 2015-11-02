@@ -16,10 +16,12 @@
             android:orientation="horizontal">
             <ImageView
                 android:layout_width="wrap_content"
+                android:maxWidth="150dp"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:scaleType="centerInside"
-                android:id="@+id/movie_detail_poster_image"/>
+                android:id="@+id/movie_detail_poster_image"
+                android:src="@drawable/no_image"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -30,7 +32,8 @@
                 <TextView android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="25dp"
-                    android:id="@+id/movie_detail_title"/>
+                    android:id="@+id/movie_detail_title"
+                    android:text="Big Hero 6"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -44,7 +47,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/movie_detail_release_date"/>
+                        android:id="@+id/movie_detail_release_date"
+                        android:text="Oct 12 2015"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -59,12 +63,20 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/movie_detail_vote_average"/>
+                        android:id="@+id/movie_detail_vote_average"
+                        android:text="7.6"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/movie_detail_average_total"/>
                 </LinearLayout>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/make_favorite"
+                    android:id="@+id/button"/>
+
             </LinearLayout>
         </LinearLayout>
 
@@ -78,7 +90,40 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/movie_detail_description"/>
+            android:id="@+id/movie_detail_description"
+            android:text="Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man."/>
+
+        <!--Horizontal Rule-->
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="#FF888888"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/trailers"/>
+
+        <!--<ListView-->
+            <!--android:id="@+id/trailer_list"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"/>-->
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="#ff888888"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reviews"/>
+
+        <!--<ListView-->
+            <!--android:id="@+id/review_list"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"/>-->
+
 
     </LinearLayout>
 </ScrollView>

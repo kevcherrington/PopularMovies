@@ -1,16 +1,11 @@
 package com.kecher.android.popularmovies;
 
-import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-
-import com.squareup.picasso.Picasso;
-
-import java.util.List;
+import android.widget.CursorAdapter;
 
 /**
  * (C) Copyright 2015 Kevin Cherrington (kevcherrington@gmail.com).
@@ -29,31 +24,43 @@ import java.util.List;
  * Kevin Cherrington
  *
  */
-public class MoviePosterAdapter extends ArrayAdapter<MoviePoster> {
+public class MoviePosterAdapter extends CursorAdapter {
     private static final String LOG_TAG = MoviePosterAdapter.class.getSimpleName();
 
-    private Context mContext;
+    public static class viewHolder {
 
-    public MoviePosterAdapter(Activity context, List<MoviePoster> moviePosters) {
-        super(context, 0, moviePosters);
-        mContext = context;
+    }
+
+    public MoviePosterAdapter(Context context, Cursor c, int flags) {
+        super(context, c, flags);
     }
 
     // create a new ImageView for each item referenced by the Adapter
-    public View getView(int position, View convertView, ViewGroup parent) {
+//    public View getView(int position, View convertView, ViewGroup parent) {
+//
+//        MoviePoster moviePoster = getItem(position);
+//
+//        if (convertView == null) {
+//            convertView = LayoutInflater.from(getContext()).inflate(R.layout.poster_item, parent, false);
+//        }
+//
+//        ImageView posterImageView = (ImageView) convertView.findViewById(R.id.poster_image);
+//
+//        Picasso.with(mContext).load(moviePoster.getPosterUrl()).placeholder(R.drawable.no_image)
+//                .error(R.drawable.no_image).into(posterImageView);
+//
+//        return convertView;
+//    }
 
-        MoviePoster moviePoster = getItem(position);
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        View view = LayoutInflater.from(context).inflate()
+        return null;
+    }
 
-        if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.poster_item, parent, false);
-        }
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
 
-        ImageView posterImageView = (ImageView) convertView.findViewById(R.id.poster_image);
-
-        Picasso.with(mContext).load(moviePoster.getPosterUrl()).placeholder(R.drawable.no_image)
-                .error(R.drawable.no_image).into(posterImageView);
-
-        return convertView;
     }
 
 }

@@ -35,7 +35,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PosterFragment(), POSTERFRAGMENT_TAG)
+                    .add(R.id.movie_thumbnails, new PosterFragment(), POSTERFRAGMENT_TAG)
                     .commit();
         }
     }
