@@ -42,5 +42,11 @@
     <string name="movie_detail_release_title">Released:</string>
     <string name="movie_detail_rating">Rating:</string>
     <string name="movie_detail_average_total">/10</string>
+    <string name="make_favorite">Favorite</string>
+    <string name="un_favorite">Un-Favorite</string>
+    <string name="trailers">Trailers:</string>
+    <string name="reviews">Reviews:</string>
+
+    <string name="content_authority" translatable="false">com.kecher.android.popularmovies</string>
 
 </resources>

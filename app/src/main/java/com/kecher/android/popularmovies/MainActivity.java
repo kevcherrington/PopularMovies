@@ -26,17 +26,24 @@ import android.view.MenuItem;
 public class MainActivity extends ActionBarActivity {
 
     private String sortOrder;
-    private final String POSTERFRAGMENT_TAG = "PFTAG";
+    private final String DETAILFRAGMENT_TAG = "DFTAG";
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         sortOrder = Utility.getSortOrder(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PosterFragment(), POSTERFRAGMENT_TAG)
-                    .commit();
+
+        if (findViewById(R.id.movie_detail_container) != null) {
+            mTwoPane = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.movie_detail_container, new MovieDetailFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            mTwoPane = false;
         }
     }
 
@@ -45,7 +52,7 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         String storedSortOrder = Utility.getSortOrder(this);
         if (storedSortOrder != null && !storedSortOrder.equals(sortOrder)) {
-            PosterFragment pf = (PosterFragment) getSupportFragmentManager().findFragmentByTag(POSTERFRAGMENT_TAG);
+            PosterFragment pf = (PosterFragment) getSupportFragmentManager().findFragmentById(R.id.movie_thumbnails);
             if (pf != null) {
                 pf.onSortOrderChanged();
             }
