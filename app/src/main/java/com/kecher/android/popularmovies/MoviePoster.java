@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,11 +30,13 @@ import java.util.List;
 public class MoviePoster implements Parcelable {
     private static String LOG_TAG = MoviePoster.class.getSimpleName();
 
+    public static final String POSTER = "moviePoster";
+
     public static String DATE_FORMAT = "yyyy-MM-dd";
     private String movieTitle;
     private Date releaseDate;
     private String posterUrl;
-    private List<String> trailerUrls;
+    private List<String> trailerUrls = new ArrayList<>();
     private Double voteAverage;
     private String overview;
     private int popularity; // 1 is low

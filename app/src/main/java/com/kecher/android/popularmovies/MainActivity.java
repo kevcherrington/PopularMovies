@@ -23,7 +23,7 @@ import android.view.MenuItem;
  * Kevin Cherrington
  *
  */
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements PosterFragment.Callback {
 
     private String sortOrder;
     private final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -82,5 +82,26 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemSelected(MoviePoster poster) {
+        if (mTwoPane) {
+            Bundle args = new Bundle();
+            args.putParcelable(PosterFragment.EXTRA_POSTER_PARCEL, poster);
+
+            MovieDetailFragment fragment = new MovieDetailFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
+
+        } else {
+            Intent movieDetailIntent = new Intent(this, MovieDetailActivity.class)
+                    .putExtra(PosterFragment.EXTRA_POSTER_PARCEL, poster);
+            startActivity(movieDetailIntent);
+
+        }
     }
 }

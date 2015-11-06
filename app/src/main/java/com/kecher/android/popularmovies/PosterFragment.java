@@ -1,6 +1,5 @@
 package com.kecher.android.popularmovies;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -56,11 +55,9 @@ import java.util.Map;
 public class PosterFragment extends Fragment {
     private final String LOG_TAG = PosterFragment.class.getSimpleName();
 
-    public static final String EXTRA_MOVIE_POSTER = "extra_movie_poster";
-    public static final String EXTRA_MOVIE_TITLE = "extra_movie_title";
-    public static final String EXTRA_MOVIE_RELEASE_DATE = "extra_movie_release_date";
-    public static final String EXTRA_MOVIE_VOTE_AVERAGE = "extra_movie_vote_average";
-    public static final String EXTRA_MOVIE_DETAILS = "extra_movie_details";
+    public static final String RELEASE_DATE_FORMAT = "MMM dd yyyy";
+
+    public static final String EXTRA_POSTER_PARCEL = "extra_poster_parcel";
 
     private MoviePosterAdapter posterAdapter;
 
@@ -75,6 +72,11 @@ public class PosterFragment extends Fragment {
     public static String DISCOVER_URL = "https://api.themoviedb.org/3/discover/movie";
 
     Map<String, String[]> configData;
+
+    // Callback interface to be implemented by the main activity so that we can have access to the two pane variable.
+    public interface Callback {
+        public void onItemSelected(MoviePoster poster);
+    }
 
     public PosterFragment() {
     }
@@ -195,16 +197,7 @@ public class PosterFragment extends Fragment {
                 // Executed in an Activity, so 'this' is the Context
                 // The fileUrl is a string URL, such as "http://www.example.com/image.png"
 
-                MoviePoster poster = posterAdapter.getItem(position);
-                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy");
-                String releaseDate = poster.getReleaseDate() != null ? sdf.format(poster.getReleaseDate()) : "Unavailable";
-                Intent movieDetailIntent = new Intent(getActivity(), MovieDetailActivity.class)
-                        .putExtra(EXTRA_MOVIE_POSTER, poster.getPosterUrl())
-                        .putExtra(EXTRA_MOVIE_TITLE, poster.getMovieTitle())
-                        .putExtra(EXTRA_MOVIE_RELEASE_DATE, releaseDate)
-                        .putExtra(EXTRA_MOVIE_VOTE_AVERAGE, poster.getVoteAverage())
-                        .putExtra(EXTRA_MOVIE_DETAILS, poster.getOverview());
-                startActivity(movieDetailIntent);
+                ((Callback) getActivity()).onItemSelected(posterAdapter.getItem(position));
             }
         });
 

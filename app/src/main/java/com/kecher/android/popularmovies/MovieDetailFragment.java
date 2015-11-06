@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
+
 /**
  * (C) Copyright 2015 Kevin Cherrington (kevcherrington@gmail.com).
  *
@@ -30,6 +32,7 @@ import com.squareup.picasso.Picasso;
  */
 public class MovieDetailFragment extends Fragment {
 
+    private MoviePoster poster;
     public MovieDetailFragment() {
     }
 
@@ -39,36 +42,37 @@ public class MovieDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
         Intent intent = getActivity().getIntent();
-        if (intent != null) {
-            if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_POSTER)) {
-                ImageView posterImageView = (ImageView) rootView.findViewById(R.id.movie_detail_poster_image);
-                String poster = intent.getStringExtra(PosterFragment.EXTRA_MOVIE_POSTER);
-                if (poster != null) {
-                    Picasso.with(getActivity()).load(poster).into(posterImageView);
-                } else {
-                    Picasso.with(getActivity()).load(R.drawable.no_image).into(posterImageView);
-                }
+        if (intent != null && intent.hasExtra(PosterFragment.EXTRA_POSTER_PARCEL)) {
+            poster = intent.getParcelableExtra(PosterFragment.EXTRA_POSTER_PARCEL);
+        } else if (getArguments() != null) {
+            poster = getArguments().getParcelable(PosterFragment.EXTRA_POSTER_PARCEL);
+        }
+
+        if (poster != null) {
+            ImageView posterImageView = (ImageView) rootView.findViewById(R.id.movie_detail_poster_image);
+            String posterUrl = poster.getPosterUrl();
+            if (posterUrl != null) {
+                Picasso.with(getActivity()).load(posterUrl).into(posterImageView);
+            } else {
+                Picasso.with(getActivity()).load(R.drawable.no_image).into(posterImageView);
             }
-            if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_TITLE)) {
-                String movieTitle = intent.getStringExtra(PosterFragment.EXTRA_MOVIE_TITLE);
-                ((TextView) rootView.findViewById(R.id.movie_detail_title))
-                        .setText(movieTitle);
-            }
-            if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_RELEASE_DATE)) {
-                String releaseDate = intent.getStringExtra(PosterFragment.EXTRA_MOVIE_RELEASE_DATE);
-                ((TextView) rootView.findViewById(R.id.movie_detail_release_date))
-                        .setText(releaseDate);
-            }
-            if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_VOTE_AVERAGE)) {
-                Double voteAverage = intent.getDoubleExtra(PosterFragment.EXTRA_MOVIE_VOTE_AVERAGE, 0);
-                ((TextView) rootView.findViewById(R.id.movie_detail_vote_average))
-                        .setText(Double.toString(voteAverage));
-            }
-            if (intent.hasExtra(PosterFragment.EXTRA_MOVIE_DETAILS)) {
-                String description = intent.getStringExtra(PosterFragment.EXTRA_MOVIE_DETAILS);
-                ((TextView) rootView.findViewById(R.id.movie_detail_description))
-                        .setText(description);
-            }
+
+            String movieTitle = poster.getMovieTitle();
+            ((TextView) rootView.findViewById(R.id.movie_detail_title))
+                    .setText(movieTitle);
+
+            SimpleDateFormat sdf = new SimpleDateFormat(MoviePoster.DATE_FORMAT);
+            String releaseDate = poster.getReleaseDate() != null ? sdf.format(poster.getReleaseDate()) : "Unavailable";
+            ((TextView) rootView.findViewById(R.id.movie_detail_release_date))
+                    .setText(releaseDate);
+
+            Double voteAverage = poster.getVoteAverage();
+            ((TextView) rootView.findViewById(R.id.movie_detail_vote_average))
+                    .setText(Double.toString(voteAverage));
+
+            String overview = poster.getOverview();
+            ((TextView) rootView.findViewById(R.id.movie_detail_overview))
+                    .setText(overview);
         }
         return rootView;
     }
