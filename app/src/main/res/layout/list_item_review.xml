@@ -2,18 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingBottom="5dp"
+    android:paddingTop="5dp">
 
     <TextView
         android:id="@+id/review_author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Jack O'Lantern"/>
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/review_content"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This movie is awesome! 5 stars for sure!"/>
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

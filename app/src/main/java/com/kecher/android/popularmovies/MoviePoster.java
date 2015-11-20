@@ -33,15 +33,19 @@ public class MoviePoster implements Parcelable {
     public static final String POSTER = "moviePoster";
 
     public static String DATE_FORMAT = "yyyy-MM-dd";
+    private String tmdbMovieId;
     private String movieTitle;
     private Date releaseDate;
     private String posterUrl;
-    private List<String> trailerUrls = new ArrayList<>();
+    private List<MovieTrailer> trailers = new ArrayList<>();
+    private List<MovieReview> reviews = new ArrayList<>();
     private Double voteAverage;
     private String overview;
     private int popularity; // 1 is low
 
-    public MoviePoster(String movieTitle, Date releaseDate, String posterUrl, Double voteAverage, String overview, int popularity) {
+    public MoviePoster(String tmdbMovieId, String movieTitle, Date releaseDate, String posterUrl, Double voteAverage, String overview, int popularity) {
+        this.tmdbMovieId = tmdbMovieId;
+
         if (!movieTitle.equals("null")) {
             this.movieTitle = movieTitle;
         }
@@ -64,8 +68,10 @@ public class MoviePoster implements Parcelable {
         } catch (ParseException e) {
             Log.e(LOG_TAG, "unable to parse date: ", e);
         }
+        tmdbMovieId = in.readString();
         posterUrl = in.readString();
-        in.readStringList(trailerUrls);
+        in.readTypedList(trailers, MovieTrailer.CREATOR);
+        in.readTypedList(reviews, MovieReview.CREATOR);
         voteAverage = in.readDouble();
         overview = in.readString();
         popularity = in.readInt();
@@ -80,8 +86,10 @@ public class MoviePoster implements Parcelable {
         } else {
             dest.writeString(null);
         }
+        dest.writeString(tmdbMovieId);
         dest.writeString(posterUrl);
-        dest.writeStringList(trailerUrls);
+        dest.writeTypedList(trailers);
+        dest.writeTypedList(reviews);
         dest.writeDouble(voteAverage);
         dest.writeString(overview);
         dest.writeInt(popularity);
@@ -128,13 +136,14 @@ public class MoviePoster implements Parcelable {
         }
     }
 
-    public List<String> getTrailerUrls() {
-        return trailerUrls;
+    public List<MovieTrailer> getTrailers() {
+        return trailers;
     }
 
-    public void setTrailerUrls(List<String> trailerUrls) {
-        this.trailerUrls = trailerUrls;
+    public void setTrailers(List<MovieTrailer> trailers) {
+        this.trailers = trailers;
     }
+
     public Double getVoteAverage() {
         return voteAverage;
     }
@@ -166,4 +175,19 @@ public class MoviePoster implements Parcelable {
         return 0;
     }
 
+    public List<MovieReview> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<MovieReview> reviews) {
+        this.reviews = reviews;
+    }
+
+    public String getTmdbMovieId() {
+        return tmdbMovieId;
+    }
+
+    public void setTmdbMovieId(String tmdbMovieId) {
+        this.tmdbMovieId = tmdbMovieId;
+    }
 }

@@ -181,9 +181,7 @@ public class PosterFragment extends Fragment {
 
         if (moviePosters != null) {
             posterAdapter.clear();
-            for (MoviePoster poster : moviePosters) {
-                posterAdapter.add(poster);
-            }
+            posterAdapter.addAll(moviePosters);
         }
 
         // Get a reference to the ListView, and attach this adapter to it.
@@ -213,6 +211,7 @@ public class PosterFragment extends Fragment {
 
         @Override
         protected MoviePoster[] doInBackground(String... params) {
+            final String MOVIE_ID = "id";
             final String RESULTS = "results";
             final String OVERVIEW = "overview"; // overview
             final String RELEASE_DATE = "release_date";
@@ -252,7 +251,7 @@ public class PosterFragment extends Fragment {
                             .appendPath(poster.getString(POSTER_PATH).replaceAll("/", ""))
                             .appendQueryParameter(API_KEY_PARAM, apiKey).build();
 
-                    posters[i] = new MoviePoster(poster.getString(TITLE), releaseDate,
+                    posters[i] = new MoviePoster(poster.getString(MOVIE_ID), poster.getString(TITLE), releaseDate,
                             builtUri.toString(), poster.getDouble(VOTE_AVERAGE), poster.getString(OVERVIEW),
                             poster.getInt(POPULARITY));
                 }

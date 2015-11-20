@@ -1,99 +1,113 @@
-<ScrollView  xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/activity_horizontal_margin"
+    tools:context="com.kecher.android.popularmovies.MovieDetailFragment">
 
     <LinearLayout
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="@dimen/activity_horizontal_margin"
-        tools:context="com.kecher.android.popularmovies.MovieDetailFragment">
+        android:orientation="horizontal"
+        android:layout_weight="1">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:maxWidth="150dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:id="@+id/movie_detail_poster_image"
+            android:src="@drawable/no_image"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:maxWidth="150dp"
+            android:orientation="vertical"
+            android:paddingLeft="16dp">
+
+            <TextView android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:scaleType="centerInside"
-                android:id="@+id/movie_detail_poster_image"
-                android:src="@drawable/no_image"/>
+                android:textSize="25dp"
+                android:id="@+id/movie_detail_title"
+                android:text="Big Hero 6"/>
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:paddingLeft="16dp">
-
-                <TextView android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="25dp"
-                    android:id="@+id/movie_detail_title"
-                    android:text="Big Hero 6"/>
-
-                <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingRight="3dp"
-                        android:text="@string/movie_detail_release_title"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/movie_detail_release_date"
-                        android:text="Oct 12 2015"/>
-                </LinearLayout>
-
-                <LinearLayout
+                    android:paddingRight="3dp"
+                    android:text="@string/movie_detail_release_title"/>
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingRight="3dp"
-                        android:text="@string/movie_detail_rating"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/movie_detail_vote_average"
-                        android:text="7.6"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/movie_detail_average_total"/>
-                </LinearLayout>
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/make_favorite"
-                    android:id="@+id/button"/>
-
+                    android:id="@+id/movie_detail_release_date"
+                    android:text="Oct 12 2015"/>
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="3dp"
+                    android:text="@string/movie_detail_rating"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/movie_detail_vote_average"
+                    android:text="7.6"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/movie_detail_average_total"/>
+            </LinearLayout>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/make_favorite"
+                android:id="@+id/button"/>
+
         </LinearLayout>
+    </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:text="@string/movie_detail_description_title"/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="20dp"
+                android:text="@string/movie_detail_description_title"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/movie_detail_overview"
-            android:text="Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man."/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/movie_detail_overview"
+                android:text="Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man. Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man. Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man. Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man."/>
+        </LinearLayout>
+    </ScrollView>
 
-        <!--Horizontal Rule-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="1">
+
         <View
             android:layout_width="fill_parent"
             android:layout_height="2dp"
@@ -104,11 +118,18 @@
             android:layout_height="wrap_content"
             android:text="@string/trailers"/>
 
-        <!--<ListView-->
-        <!--android:id="@+id/trailer_list"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"/>-->
+        <ListView
+            android:id="@+id/trailer_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="200dp"/>
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="1">
         <View
             android:layout_width="fill_parent"
             android:layout_height="2dp"
@@ -119,11 +140,11 @@
             android:layout_height="wrap_content"
             android:text="@string/reviews"/>
 
-        <!--<ListView-->
-        <!--android:id="@+id/review_list"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"/>-->
-
-
+        <ListView
+            android:id="@+id/review_list"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:minHeight="200dp"/>
     </LinearLayout>
-</ScrollView>
+
+</LinearLayout>

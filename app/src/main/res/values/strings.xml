@@ -49,4 +49,7 @@
 
     <string name="content_authority" translatable="false">com.kecher.android.popularmovies</string>
 
+    <string name="the_movie_db_videos" translatable="false">https://api.themoviedb.org/3/movie/%1$s/videos</string>
+    <string name="the_movie_db_reviews" translatable="false">https://api.themoviedb.org/3/movie/%1$s/reviews</string>
+
 </resources>
