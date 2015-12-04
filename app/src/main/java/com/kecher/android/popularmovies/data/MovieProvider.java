@@ -63,9 +63,9 @@ public class MovieProvider extends ContentProvider {
     private static UriMatcher buildUriMatcher() {
         UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        uriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_MOVIE, MOVIE);
-        uriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_REVIEW, REVIEW);
-        uriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_TRAILER, TRAILER);
+//        uriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_MOVIE, MOVIE);
+//        uriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_REVIEW, REVIEW);
+//        uriMatcher.addURI(MovieContract.CONTENT_AUTHORITY, MovieContract.PATH_TRAILER, TRAILER);
 
         return uriMatcher;
     }
@@ -136,11 +136,11 @@ public class MovieProvider extends ContentProvider {
 
         switch (match) {
             case MOVIE:
-                return MovieContract.MovieEntry.CONTENT_ITEM_TYPE;
-            case REVIEW:
-                return MovieContract.ReviewEntry.CONTENT_ITEM_TYPE;
-            case TRAILER:
-                return MovieContract.TrailerEntry.CONTENT_ITEM_TYPE;
+//                return MovieContract.MovieEntry.CONTENT_ITEM_TYPE;
+//            case REVIEW:
+//                return MovieContract.ReviewEntry.CONTENT_ITEM_TYPE;
+//            case TRAILER:
+//                return MovieContract.TrailerEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -151,14 +151,14 @@ public class MovieProvider extends ContentProvider {
     public Uri insert(@NonNull Uri uri, ContentValues values) {
         final SQLiteDatabase db = openHelper.getWritableDatabase();
         final int match = uriMatcher.match(uri);
-        Uri returnUri;
+        Uri returnUri = null;
 
         switch (match) {
             case MOVIE: {
                 normalizeDate(values);
                 long _id = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
-                    returnUri = MovieContract.MovieEntry.buildMovieUri(_id);
+//                    returnUri = MovieContract.MovieEntry.buildMovieUri(_id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
@@ -167,7 +167,7 @@ public class MovieProvider extends ContentProvider {
             case REVIEW: {
                 long _id = db.insert(MovieContract.ReviewEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
-                    returnUri = MovieContract.ReviewEntry.buildReviewUri(_id);
+//                    returnUri = MovieContract.ReviewEntry.buildReviewUri(_id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
@@ -176,7 +176,7 @@ public class MovieProvider extends ContentProvider {
             case TRAILER: {
                 long _id = db.insert(MovieContract.TrailerEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
-                    returnUri = MovieContract.TrailerEntry.buildTrailerUri(_id);
+//                    returnUri = MovieContract.TrailerEntry.buildTrailerUri(_id);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }

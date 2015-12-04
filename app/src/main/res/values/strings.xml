@@ -43,7 +43,7 @@
     <string name="movie_detail_rating">Rating:</string>
     <string name="movie_detail_average_total">/10</string>
     <string name="make_favorite">Favorite</string>
-    <string name="un_favorite">Un-Favorite</string>
+    <string name="added_to_favorites">%s added to favorites!</string>
     <string name="trailers">Trailers:</string>
     <string name="reviews">Reviews:</string>
 

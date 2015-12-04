@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="title_text_background">#ddeeeeee</color>
+    <color name="gold">#ffffb000</color>
 
 </resources>

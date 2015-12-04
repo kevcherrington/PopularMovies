@@ -26,7 +26,7 @@ import com.kecher.android.popularmovies.data.MovieContract.TrailerEntry;
 public class MovieDbHelper extends SQLiteOpenHelper {
     private static final String LOG_TAG = MovieDbHelper.class.getSimpleName();
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     static final String DATABASE_NAME = "movie.db";
 
@@ -48,7 +48,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
                 MovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_POPULARITY + " REAL NOT NULL, " +
-                MovieEntry.COLUMN_IMAGE + " BLOB, " +
 
                 // To assure the application has just one movie entry
                 // it's created with a UNIQUE constraint with the REPLACE strategy
@@ -61,7 +60,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
                 ReviewEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
                 ReviewEntry.COLUMN_REVIEW + " TEXT NOT NULL, " +
-                ReviewEntry.COLUMN_AUTHOR + " TEXT NOT NULL" +
+                ReviewEntry.COLUMN_AUTHOR + " TEXT NOT NULL, " +
                 " FOREIGN KEY(" + ReviewEntry.COLUMN_MOVIE_ID +
                 ") REFERENCES " + MovieEntry.TABLE_NAME +
                 "(" + MovieEntry._ID + "));";
@@ -74,7 +73,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 TrailerEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
                 TrailerEntry.COLUMN_NAME + " TEXT, " +
                 TrailerEntry.COLUMN_SITE + " TEXT, " +
-                TrailerEntry.COLUMN_KEY + " TEXT UNIQUE NOT NULL" +
+                TrailerEntry.COLUMN_KEY + " TEXT UNIQUE NOT NULL, " +
                 " FOREIGN KEY (" + TrailerEntry.COLUMN_MOVIE_ID +
                 ") REFERENCES " + MovieEntry.TABLE_NAME +
                 "(" + MovieEntry._ID + "));";
