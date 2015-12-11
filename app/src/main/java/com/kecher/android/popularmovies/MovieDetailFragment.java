@@ -3,6 +3,7 @@ package com.kecher.android.popularmovies;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
@@ -147,89 +148,12 @@ public class MovieDetailFragment extends Fragment {
 
                 @Override
                 public void onClick(View v) {
-                    // add movie to the DB
-                    Target target = new Target() {
-
-                        @Override
-                        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-                            new Thread(new Runnable() {
-
-                                @Override
-                                public void run() {
-
-                                    File file = new File(getActivity().getDir("popular_movies", Context.MODE_PRIVATE)
-                                            + "/" + poster.getTmdbMovieId() + ".png");
-                                    try {
-                                        file.createNewFile();
-                                        FileOutputStream ostream = new FileOutputStream(file);
-                                        bitmap.compress(Bitmap.CompressFormat.PNG, 80, ostream);
-                                        Log.d(LOG_TAG, "File path is: " + file.getAbsolutePath());
-                                        ostream.close();
-                                    } catch (Exception e) {
-                                        Log.e(LOG_TAG, "Unable to save Image to internal storage", e);
-                                    }
-
-                                }
-                            }).start();
-                        }
-
-                        @Override
-                        public void onBitmapFailed(Drawable errorDrawable) {
-                        }
-
-                        @Override
-                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-                            if (placeHolderDrawable != null) {
-                            }
-                        }
-                    };
-
-                    //get instance to db.
-                    MovieDbHelper movieDbHelper = new MovieDbHelper(getActivity());
-                    SQLiteDatabase db = movieDbHelper.getWritableDatabase();
-                    // create content values for Movie insert.
-                    ContentValues meValues = new ContentValues();// Movie
-                    meValues.put(MovieContract.MovieEntry.COLUMN_TMDB_MOVIE_ID, poster.getTmdbMovieId());
-                    meValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, true);
-                    meValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_TITLE, poster.getMovieTitle());
-                    meValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, MovieContract.normalizeDate(poster.getReleaseDate().getTime()));
-                    meValues.put(MovieContract.MovieEntry.COLUMN_POSTER_URL, poster.getPosterUrl());
-                    meValues.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, poster.getVoteAverage());
-                    meValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, poster.getOverview());
-                    meValues.put(MovieContract.MovieEntry.COLUMN_POPULARITY, poster.getPopularity());
-                    Picasso.with(getActivity()).load(poster.getPosterUrl()).into(target);
-
-                    // insert data
-                    Long newRowId = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, meValues);
-                    Log.d(LOG_TAG, "Successfully insert movie, movie._id: " + newRowId);
-
-                    for (MovieReview review : poster.getReviews()) {
-                        ContentValues reValues = new ContentValues();// Review
-                        reValues.put(MovieContract.ReviewEntry.COLUMN_MOVIE_ID, newRowId);
-                        reValues.put(MovieContract.ReviewEntry.COLUMN_REVIEW, review.getReviewContent());
-                        reValues.put(MovieContract.ReviewEntry.COLUMN_AUTHOR, review.getReviewAuthor());
-                        Long reviewId = db.insert(MovieContract.ReviewEntry.TABLE_NAME, null, reValues);
-                        Log.d(LOG_TAG, "Successfully inerted review by: " + review.getReviewAuthor() + " id: " + reviewId);
+                    Long movieId = getMovieId(poster.getTmdbMovieId());
+                    if (movieId == null) {
+                        addMovieToDb(rootView);
+                    } else {
+                        removeMovieFromDb(rootView, movieId);
                     }
-
-                    for (MovieTrailer trailer : poster.getTrailers()) {
-                        ContentValues teValues = new ContentValues();// Trailer
-                        teValues.put(MovieContract.TrailerEntry.COLUMN_MOVIE_ID, newRowId);
-                        teValues.put(MovieContract.TrailerEntry.COLUMN_KEY, trailer.getTrailerUrl());
-                        teValues.put(MovieContract.TrailerEntry.COLUMN_NAME, trailer.getTrailerTitle());
-                        teValues.put(MovieContract.TrailerEntry.COLUMN_SITE, "youtube");
-                        Long trailerId = db.insert(MovieContract.TrailerEntry.TABLE_NAME, null, teValues);
-                        Log.d(LOG_TAG, "Successfully inserted trailer id: " + trailerId);
-                    }
-
-
-                    Toast.makeText(getActivity(), String.format(getResources().getString(R.string.added_to_favorites), poster.getMovieTitle()),
-                            Toast.LENGTH_SHORT).show();
-
-                    Button fav = ((Button) rootView.findViewById(R.id.favorite_button));
-                    fav.setEnabled(false);
-                    fav.getBackground().setColorFilter(0xFFFFB000, PorterDuff.Mode.MULTIPLY);
-
                 }
             });
 
@@ -252,6 +176,143 @@ public class MovieDetailFragment extends Fragment {
             ((ListView) rootView.findViewById(R.id.review_list)).setAdapter(reviewAdapter);
         }
         return rootView;
+    }
+
+    private Long getMovieId(String tmdbMovieId) {
+        MovieDbHelper dbHelper = new MovieDbHelper(getActivity());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                new String[]{MovieContract.MovieEntry._ID}, // columns to return
+                MovieContract.MovieEntry.COLUMN_TMDB_MOVIE_ID + " = ?", // where clause
+                new String[]{poster.getTmdbMovieId()}, // Args for where clause
+                null, // group by
+                null, // having
+                null, // order by
+                null); // limit
+
+        if (cursor.moveToFirst()) {
+            return cursor.getLong(0);
+        } else {
+            return null;
+        }
+    }
+
+    private boolean removeMovieFromDb(View rootView, Long movieId) {
+        MovieDbHelper dbHelper = new MovieDbHelper(getActivity());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        Log.d(LOG_TAG, "Rows removed = " + db.delete(MovieContract.MovieEntry.TABLE_NAME,
+                MovieContract.MovieEntry.COLUMN_TMDB_MOVIE_ID + " = ?",
+                new String[]{poster.getTmdbMovieId()}));
+
+        // Make sure to delete from the review and trailer tables because they aren't
+        // set to cascade on delete.
+        int reviewsDel = db.delete(MovieContract.ReviewEntry.TABLE_NAME,
+                MovieContract.ReviewEntry.COLUMN_MOVIE_ID + " = ?",
+                new String[]{String.valueOf(movieId)});
+        Log.d(LOG_TAG, "Reviews Deleted: " + reviewsDel);
+
+        int trailersDel = db.delete(MovieContract.TrailerEntry.TABLE_NAME,
+                MovieContract.TrailerEntry.COLUMN_MOVIE_ID + " = ?",
+                new String[]{String.valueOf(movieId)});
+        Log.d(LOG_TAG, "Trailers Deleted: " + trailersDel);
+
+        Button fav = ((Button) rootView.findViewById(R.id.favorite_button));
+        fav.setBackgroundResource(android.R.drawable.btn_default);
+
+        Toast.makeText(getActivity(), String.format(getResources().getString(R.string.removed_from_favorites), poster.getMovieTitle()),
+                Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private boolean addMovieToDb(View rootView) {
+        Target target = new Target() {
+
+            @Override
+            public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+                new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        File file = new File(getActivity().getDir("popular_movies", Context.MODE_PRIVATE)
+                                + "/" + poster.getTmdbMovieId() + ".png");
+                        try {
+                            file.createNewFile();
+                            FileOutputStream ostream = new FileOutputStream(file);
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 80, ostream);
+                            Log.d(LOG_TAG, "File path is: " + file.getAbsolutePath());
+                            ostream.close();
+                        } catch (Exception e) {
+                            Log.e(LOG_TAG, "Unable to save Image to internal storage", e);
+                        }
+
+                    }
+                }).start();
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                if (placeHolderDrawable != null) {
+                }
+            }
+        };
+
+        //get instance to db.
+        MovieDbHelper movieDbHelper = new MovieDbHelper(getActivity());
+        SQLiteDatabase db = movieDbHelper.getWritableDatabase();
+        // create content values for Movie insert.
+        ContentValues meValues = new ContentValues();// Movie
+        meValues.put(MovieContract.MovieEntry.COLUMN_TMDB_MOVIE_ID, poster.getTmdbMovieId());
+        meValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, true);
+        meValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_TITLE, poster.getMovieTitle());
+        meValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, MovieContract.normalizeDate(poster.getReleaseDate().getTime()));
+        meValues.put(MovieContract.MovieEntry.COLUMN_POSTER_URL, poster.getPosterUrl());
+        meValues.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, poster.getVoteAverage());
+        meValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, poster.getOverview());
+        meValues.put(MovieContract.MovieEntry.COLUMN_POPULARITY, poster.getPopularity());
+        Picasso.with(getActivity()).load(poster.getPosterUrl()).into(target);
+
+        // insert data
+        Long newRowId = db.insert(MovieContract.MovieEntry.TABLE_NAME, null, meValues);
+        Log.d(LOG_TAG, "Successfully insert movie, movie._id: " + newRowId);
+
+        for (MovieReview review : poster.getReviews()) {
+            ContentValues reValues = new ContentValues();// Review
+            reValues.put(MovieContract.ReviewEntry.COLUMN_MOVIE_ID, newRowId);
+            reValues.put(MovieContract.ReviewEntry.COLUMN_REVIEW, review.getReviewContent());
+            reValues.put(MovieContract.ReviewEntry.COLUMN_AUTHOR, review.getReviewAuthor());
+            Long reviewId = db.insert(MovieContract.ReviewEntry.TABLE_NAME, null, reValues);
+            Log.d(LOG_TAG, "Successfully inerted review by: " + review.getReviewAuthor() + " id: " + reviewId);
+        }
+
+        for (MovieTrailer trailer : poster.getTrailers()) {
+            ContentValues teValues = new ContentValues();// Trailer
+            teValues.put(MovieContract.TrailerEntry.COLUMN_MOVIE_ID, newRowId);
+            teValues.put(MovieContract.TrailerEntry.COLUMN_KEY, trailer.getTrailerUrl());
+            teValues.put(MovieContract.TrailerEntry.COLUMN_NAME, trailer.getTrailerTitle());
+            teValues.put(MovieContract.TrailerEntry.COLUMN_SITE, "youtube");
+            Long trailerId = db.insert(MovieContract.TrailerEntry.TABLE_NAME, null, teValues);
+            if (trailerId == -1) {
+                Log.d(LOG_TAG, "Exception encountered while inserting trailer.");
+            } else {
+                Log.d(LOG_TAG, "Successfully inserted trailer id: " + trailerId);
+            }
+        }
+
+
+        Toast.makeText(getActivity(), String.format(getResources().getString(R.string.added_to_favorites), poster.getMovieTitle()),
+                Toast.LENGTH_SHORT).show();
+
+        Button fav = ((Button) rootView.findViewById(R.id.favorite_button));
+        fav.getBackground().setColorFilter(0xFFFFB000, PorterDuff.Mode.MULTIPLY);
+
+        return true;
     }
 
     private void updateTrailers(List<MovieTrailer> trailers) {
