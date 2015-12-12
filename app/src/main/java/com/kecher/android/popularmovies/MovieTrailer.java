@@ -3,6 +3,8 @@ package com.kecher.android.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.kecher.android.popularmovies.data.MovieContract;
+
 /**
  * (C) Copyright 2015 Kevin Cherrington (kevcherrington@gmail.com).
  * <p/>
@@ -24,6 +26,13 @@ public class MovieTrailer implements Parcelable {
 
     private String trailerUrl;
     private String trailerTitle;
+
+    public static String[] trailerProjection = {
+            MovieContract.TrailerEntry._ID,
+            MovieContract.TrailerEntry.COLUMN_KEY,
+            MovieContract.TrailerEntry.COLUMN_NAME,
+            MovieContract.TrailerEntry.COLUMN_SITE
+    };
 
     public MovieTrailer(Parcel in) {
         trailerUrl = in.readString();

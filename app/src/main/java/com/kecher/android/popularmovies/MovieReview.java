@@ -3,6 +3,8 @@ package com.kecher.android.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.kecher.android.popularmovies.data.MovieContract;
+
 /**
  * (C) Copyright 2015 Kevin Cherrington (kevcherrington@gmail.com).
  * <p/>
@@ -24,6 +26,12 @@ public class MovieReview implements Parcelable {
 
     public String reviewAuthor;
     public String reviewContent;
+
+    public static String[] reviewProjection = {
+            MovieContract.ReviewEntry._ID,
+            MovieContract.ReviewEntry.COLUMN_AUTHOR,
+            MovieContract.ReviewEntry.COLUMN_REVIEW
+    };
 
     public MovieReview(Parcel in) {
         reviewAuthor = in.readString();

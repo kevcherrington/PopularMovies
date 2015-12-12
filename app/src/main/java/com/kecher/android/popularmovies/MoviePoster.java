@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.kecher.android.popularmovies.data.MovieContract;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,7 +45,57 @@ public class MoviePoster implements Parcelable {
     private String overview;
     private int popularity; // 1 is low
 
-    public MoviePoster(String tmdbMovieId, String movieTitle, Date releaseDate, String posterUrl, Double voteAverage, String overview, int popularity) {
+    static String[] PosterProjection = {
+            MovieContract.MovieEntry._ID,
+            MovieContract.MovieEntry.COLUMN_TMDB_MOVIE_ID,
+            MovieContract.MovieEntry.COLUMN_MOVIE_TITLE,
+            MovieContract.MovieEntry.COLUMN_RELEASE_DATE,
+            MovieContract.MovieEntry.COLUMN_POSTER_URL,
+            MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+            MovieContract.MovieEntry.COLUMN_OVERVIEW,
+            MovieContract.MovieEntry.COLUMN_POPULARITY
+    };
+
+    /**
+     * Constructor that accepts a Long for the release date.
+     * @param tmdbMovieId The movie id assigned by TMDB
+     * @param movieTitle The title of the movie
+     * @param releaseDate The date the movie was released represented a the milliseconds since epoch.
+     * @param posterUrl The URI to the poster image (on web or local storage)
+     * @param voteAverage The vote average returned by TMDB
+     * @param overview Overview for the movie
+     * @param popularity Popularity of the movie
+     */
+    public MoviePoster (String tmdbMovieId, String movieTitle, Long releaseDate, String posterUrl, Double voteAverage, String overview, int popularity) {
+        this.tmdbMovieId = tmdbMovieId;
+
+        if (!movieTitle.equals("null")) {
+            this.movieTitle = movieTitle;
+        }
+        if (releaseDate != null && releaseDate != 0L) {
+            this.releaseDate = new Date(releaseDate);
+        }
+        if (!posterUrl.equals("null")) {
+            this.posterUrl = posterUrl;
+        }
+        this.voteAverage = voteAverage;
+        if (!overview.equals("null")) {
+            this.overview = overview;
+        }
+        this.popularity = popularity;
+    }
+
+    /**
+     * Constructor that accepts a date object for the release date.
+     * @param tmdbMovieId The movie id assigned by TMDB
+     * @param movieTitle The title of the movie
+     * @param releaseDate The date the movie was released
+     * @param posterUrl The URI to the poster image (on web or local storage)
+     * @param voteAverage The vote average returned by TMDB
+     * @param overview Overview for the movie
+     * @param popularity Popularity of the movie
+     */
+    public MoviePoster (String tmdbMovieId, String movieTitle, Date releaseDate, String posterUrl, Double voteAverage, String overview, int popularity) {
         this.tmdbMovieId = tmdbMovieId;
 
         if (!movieTitle.equals("null")) {

@@ -1,6 +1,8 @@
 package com.kecher.android.popularmovies;
 
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,6 +18,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
+
+import com.kecher.android.popularmovies.data.MovieContract;
+import com.kecher.android.popularmovies.data.MovieDbHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -75,7 +81,7 @@ public class PosterFragment extends Fragment {
 
     // Callback interface to be implemented by the main activity so that we can have access to the two pane variable.
     public interface Callback {
-        public void onItemSelected(MoviePoster poster);
+        void onItemSelected(MoviePoster poster);
     }
 
     public PosterFragment() {
@@ -156,9 +162,104 @@ public class PosterFragment extends Fragment {
         posterSize = Utility.getPosterSize(getActivity());
 
         if (sortOrder.equals(getString(R.string.pref_sort_favorites))) {
-            Toast.makeText(getActivity(), "No favorites stored", Toast.LENGTH_SHORT).show();
+            MovieDbHelper dbHelper = new MovieDbHelper(getActivity());
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            List<MoviePoster> posters = getPosters(db);
+            db.close();
+            dbHelper.close();
+
+            if (posters != null) {
+                moviePosters = new MoviePoster[posters.size()];
+                posters.toArray(moviePosters);
+
+                if (posterAdapter != null) { // update poster adapter. Will be null if view has not yet been drawn.
+                    posterAdapter.clear();
+                    for (MoviePoster poster : moviePosters) {
+                        posterAdapter.add(poster);
+                    }
+                }
+            } else {
+                Toast.makeText(getActivity(), "No favorites stored", Toast.LENGTH_SHORT).show();
+            }
+
         } else {
             discoverJsonTask.execute(apiKey, sortOrder);
+        }
+    }
+
+    private List<MoviePoster> getPosters(SQLiteDatabase db) {
+        List<MoviePoster> posters = new ArrayList<>();
+
+        Cursor cursor = db.query(MovieContract.MovieEntry.TABLE_NAME,
+                MoviePoster.PosterProjection,
+                "1 = 1",
+                null,
+                null,
+                null,
+                MovieContract.MovieEntry._ID + " DESC");
+
+        if (cursor.moveToFirst()) {
+            do {
+                MoviePoster poster = new MoviePoster(cursor.getString(1),//  TMDB Movie Id
+                        cursor.getString(2), // movie Title
+                        cursor.getLong(3), // release date
+                        cursor.getString(4), // poster url
+                        cursor.getDouble(5), // vote average
+                        cursor.getString(6), // overview
+                        cursor.getInt(7) // popularity
+                );
+                poster.setReviews(getReviews(cursor.getLong(0), db));
+                poster.setTrailers(getTrailers(cursor.getLong(0), db));
+                posters.add(poster);
+            } while (cursor.moveToNext());
+        }
+
+        return posters;
+    }
+
+    private List<MovieTrailer> getTrailers(Long movieId, SQLiteDatabase db) {
+        if (movieId != null && movieId != 0L && db != null) {
+            List<MovieTrailer> trailers = new ArrayList<>();
+            Cursor cursor = db.query(MovieContract.TrailerEntry.TABLE_NAME,
+                    MovieTrailer.trailerProjection,
+                    MovieContract.TrailerEntry.COLUMN_MOVIE_ID + " = ?",
+                    new String[]{String.valueOf(movieId)},
+                    null,
+                    null,
+                    null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    MovieTrailer trailer = new MovieTrailer(cursor.getString(1), cursor.getString(2));
+                    trailers.add(trailer);
+                } while (cursor.moveToNext());
+            }
+            return trailers;
+        } else {
+            return null;
+        }
+    }
+
+    private List<MovieReview> getReviews(Long movieId, SQLiteDatabase db) {
+        if (movieId != null && movieId != 0L && db != null) {
+            List<MovieReview> reviews = new ArrayList<>();
+            Cursor cursor = db.query(MovieContract.ReviewEntry.TABLE_NAME,
+                    MovieReview.reviewProjection,
+                    MovieContract.ReviewEntry.COLUMN_MOVIE_ID + " = ?",
+                    new String[]{String.valueOf(movieId)},
+                    null,
+                    null,
+                    null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    MovieReview review = new MovieReview(cursor.getString(1), cursor.getString(2));
+                    reviews.add(review);
+                } while (cursor.moveToNext());
+            }
+            return reviews;
+        } else {
+            return null;
         }
     }
 

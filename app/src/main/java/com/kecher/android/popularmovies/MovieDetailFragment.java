@@ -84,7 +84,7 @@ public class MovieDetailFragment extends Fragment {
         Intent intent = getActivity().getIntent();
         super.onCreate(bundle);
 
-        if (intent != null & intent.hasExtra(PosterFragment.EXTRA_POSTER_PARCEL)) {
+        if (intent != null && intent.hasExtra(PosterFragment.EXTRA_POSTER_PARCEL)) {
             poster = intent.getParcelableExtra(PosterFragment.EXTRA_POSTER_PARCEL);
 
             if (poster.getTrailers().isEmpty() && poster.getTmdbMovieId() != null) {
@@ -144,11 +144,17 @@ public class MovieDetailFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.movie_detail_overview))
                     .setText(overview);
 
-            rootView.findViewById(R.id.favorite_button).setOnClickListener(new View.OnClickListener() {
+            final Long movieId = getMovieId(poster.getTmdbMovieId());
+            Button fav = (Button) rootView.findViewById(R.id.favorite_button);
+
+            if (movieId != null) {
+                fav.getBackground().setColorFilter(0xFFFFB000, PorterDuff.Mode.MULTIPLY);
+            }
+
+            fav.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    Long movieId = getMovieId(poster.getTmdbMovieId());
                     if (movieId == null) {
                         addMovieToDb(rootView);
                     } else {
@@ -156,6 +162,7 @@ public class MovieDetailFragment extends Fragment {
                     }
                 }
             });
+
 
             List<MovieTrailer> trailers = poster.getTrailers();
 
@@ -239,11 +246,12 @@ public class MovieDetailFragment extends Fragment {
                         File file = new File(getActivity().getDir("popular_movies", Context.MODE_PRIVATE)
                                 + "/" + poster.getTmdbMovieId() + ".png");
                         try {
-                            file.createNewFile();
-                            FileOutputStream ostream = new FileOutputStream(file);
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 80, ostream);
-                            Log.d(LOG_TAG, "File path is: " + file.getAbsolutePath());
-                            ostream.close();
+                            if (file.createNewFile()) {
+                                FileOutputStream ostream = new FileOutputStream(file);
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 80, ostream);
+                                Log.d(LOG_TAG, "File path is: " + file.getAbsolutePath());
+                                ostream.close();
+                            }
                         } catch (Exception e) {
                             Log.e(LOG_TAG, "Unable to save Image to internal storage", e);
                         }
@@ -258,8 +266,6 @@ public class MovieDetailFragment extends Fragment {
 
             @Override
             public void onPrepareLoad(Drawable placeHolderDrawable) {
-                if (placeHolderDrawable != null) {
-                }
             }
         };
 

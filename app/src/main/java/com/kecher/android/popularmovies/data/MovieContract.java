@@ -71,7 +71,7 @@ public class MovieContract {
 
         public static final String COLUMN_MOVIE_ID = "movie_id";
         public static final String COLUMN_NAME = "name";
-        public static final String COLUMN_SITE = "site";
+        public static final String COLUMN_SITE = "site"; //
         public static final String COLUMN_KEY = "key";
 
     }
