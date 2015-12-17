@@ -6,6 +6,13 @@
     android:padding="@dimen/activity_horizontal_margin"
     tools:context="com.kecher.android.popularmovies.MovieDetailFragment">
 
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="25dp"
+        android:id="@+id/movie_detail_title"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,8 +25,7 @@
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:scaleType="centerInside"
-            android:id="@+id/movie_detail_poster_image"
-            android:src="@drawable/no_image"/>
+            android:id="@+id/movie_detail_poster_image"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,26 +33,15 @@
             android:orientation="vertical"
             android:paddingLeft="16dp">
 
-            <TextView android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="25dp"
-                android:id="@+id/movie_detail_title"
-                android:text="Big Hero 6"/>
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingRight="3dp"
-                    android:text="@string/movie_detail_release_title"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:id="@+id/movie_detail_release_date"
-                    android:text="Oct 12 2015"/>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="3dp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -54,26 +49,18 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingRight="3dp"
-                    android:text="@string/movie_detail_rating"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:id="@+id/movie_detail_vote_average"
-                    android:text="7.6"/>
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/movie_detail_average_total"/>
+                    android:paddingRight="3dp"/>
             </LinearLayout>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/make_favorite"
-                android:id="@+id/favorite_button"/>
+                android:id="@+id/favorite_button"
+                android:visibility="invisible"/>
 
         </LinearLayout>
     </LinearLayout>
@@ -88,17 +75,18 @@
             android:orientation="vertical"
             android:layout_weight="1">
             <TextView
+                android:id="@+id/movie_detail_desc_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
                 android:textSize="20dp"
-                android:text="@string/movie_detail_description_title"/>
+                android:text="@string/movie_detail_description_title"
+                android:visibility="invisible"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/movie_detail_overview"
-                android:text="Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man. Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man. Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man. Hiro and his nerd friends are up against a supervillan whom they find out to is their very own professor Callihan. Hiro uses his big brain to develop new technology to help save San Fransokio from this evil man."/>
+                android:id="@+id/movie_detail_overview"/>
         </LinearLayout>
     </ScrollView>
 
@@ -109,6 +97,8 @@
         android:layout_weight="1">
 
         <View
+            android:id="@+id/movie_detail_trailer_hr"
+            android:visibility="invisible"
             android:layout_width="fill_parent"
             android:layout_height="2dp"
             android:background="#FF888888"/>
@@ -116,6 +106,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/movie_detail_trailer_title"
+            android:visibility="invisible"
             android:text="@string/trailers"/>
 
         <ListView
@@ -131,6 +123,8 @@
         android:orientation="vertical"
         android:layout_weight="1">
         <View
+            android:id="@+id/movie_detail_review_hr"
+            android:visibility="invisible"
             android:layout_width="fill_parent"
             android:layout_height="2dp"
             android:background="#ff888888"/>
@@ -138,6 +132,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/movie_detail_review_title"
+            android:visibility="invisible"
             android:text="@string/reviews"/>
 
         <ListView

@@ -86,7 +86,11 @@ public class MovieDetailFragment extends Fragment {
 
         if (intent != null && intent.hasExtra(PosterFragment.EXTRA_POSTER_PARCEL)) {
             poster = intent.getParcelableExtra(PosterFragment.EXTRA_POSTER_PARCEL);
+        } else if (getArguments() != null && getArguments().getParcelable(PosterFragment.EXTRA_POSTER_PARCEL) != null) {
+            poster = getArguments().getParcelable(PosterFragment.EXTRA_POSTER_PARCEL);
+        }
 
+        if (poster != null) {
             if (poster.getTrailers().isEmpty() && poster.getTmdbMovieId() != null) {
                 String videoUrl = String.format(getResources().getString(R.string.the_movie_db_videos), poster.getTmdbMovieId());
 
@@ -112,13 +116,15 @@ public class MovieDetailFragment extends Fragment {
         reviewAdapter = new MovieReviewAdapter(getActivity(), new ArrayList<MovieReview>());
 
         Intent intent = getActivity().getIntent();
-        if (intent != null && intent.hasExtra(PosterFragment.EXTRA_POSTER_PARCEL)) {
-            poster = intent.getParcelableExtra(PosterFragment.EXTRA_POSTER_PARCEL);
-        } else if (getArguments() != null) {
-            poster = getArguments().getParcelable(PosterFragment.EXTRA_POSTER_PARCEL);
-        }
-
         if (poster != null) {
+            if (intent != null && intent.hasExtra(PosterFragment.EXTRA_POSTER_PARCEL)) {
+                poster = intent.getParcelableExtra(PosterFragment.EXTRA_POSTER_PARCEL);
+            } else if (getArguments() != null) {
+                poster = getArguments().getParcelable(PosterFragment.EXTRA_POSTER_PARCEL);
+            }
+
+            setItemsVisible(rootView);
+
             final ImageView posterImageView = (ImageView) rootView.findViewById(R.id.movie_detail_poster_image);
             String posterUrl = poster.getPosterUrl();
             if (posterUrl != null) {
@@ -134,11 +140,11 @@ public class MovieDetailFragment extends Fragment {
             SimpleDateFormat sdf = new SimpleDateFormat(MoviePoster.DATE_FORMAT);
             String releaseDate = poster.getReleaseDate() != null ? sdf.format(poster.getReleaseDate()) : "Unavailable";
             ((TextView) rootView.findViewById(R.id.movie_detail_release_date))
-                    .setText(releaseDate);
+                    .setText(String.format(getResources().getString(R.string.movie_detail_release_date), releaseDate));
 
             Double voteAverage = poster.getVoteAverage();
             ((TextView) rootView.findViewById(R.id.movie_detail_vote_average))
-                    .setText(Double.toString(voteAverage));
+                    .setText(String.format(getResources().getString(R.string.movie_detail_rating), voteAverage));
 
             String overview = poster.getOverview();
             ((TextView) rootView.findViewById(R.id.movie_detail_overview))
@@ -183,6 +189,15 @@ public class MovieDetailFragment extends Fragment {
             ((ListView) rootView.findViewById(R.id.review_list)).setAdapter(reviewAdapter);
         }
         return rootView;
+    }
+
+    private void setItemsVisible(View rootView) {
+        rootView.findViewById(R.id.movie_detail_desc_title).setVisibility(View.VISIBLE);
+        rootView.findViewById(R.id.movie_detail_trailer_hr).setVisibility(View.VISIBLE);
+        rootView.findViewById(R.id.movie_detail_trailer_title).setVisibility(View.VISIBLE);
+        rootView.findViewById(R.id.movie_detail_review_hr).setVisibility(View.VISIBLE);
+        rootView.findViewById(R.id.movie_detail_review_title).setVisibility(View.VISIBLE);
+        rootView.findViewById(R.id.favorite_button).setVisibility(View.VISIBLE);
     }
 
     private Long getMovieId(String tmdbMovieId) {

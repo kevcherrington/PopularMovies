@@ -39,9 +39,8 @@
     <string name="config_default_poster_size" translatable="false">w185</string>
 
     <string name="movie_detail_description_title">Details:</string>
-    <string name="movie_detail_release_title">Released:</string>
-    <string name="movie_detail_rating">Rating:</string>
-    <string name="movie_detail_average_total">/10</string>
+    <string name="movie_detail_release_date">Released: %1$s</string>
+    <string name="movie_detail_rating">Rating: %1$.1f/10</string>
     <string name="make_favorite">Favorite</string>
     <string name="added_to_favorites">%s added to favorites!</string>
     <string name="removed_from_favorites">%s removed from favorites.</string>
